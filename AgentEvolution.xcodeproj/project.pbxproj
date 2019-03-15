@@ -31,6 +31,7 @@
 		E25186EA22369BC300EC94E2 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		E25186F122369C4F00EC94E2 /* agent.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = agent.cpp; sourceTree = "<group>"; };
 		E25186F222369C4F00EC94E2 /* agent.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = agent.hpp; sourceTree = "<group>"; };
+		E27EE58E223AF90C00EDB078 /* cxxopts.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = cxxopts.hpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -64,6 +65,7 @@
 			isa = PBXGroup;
 			children = (
 				E25186EA22369BC300EC94E2 /* main.cpp */,
+				E27EE58E223AF90C00EDB078 /* cxxopts.hpp */,
 				E24F5BEA2238315A00C84E3E /* population.cpp */,
 				E24F5BEB2238315A00C84E3E /* population.hpp */,
 				E25186F122369C4F00EC94E2 /* agent.cpp */,
