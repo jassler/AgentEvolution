@@ -19,14 +19,15 @@ private:
     std::vector<double> genome_added;
     int score = 0;
     
-    Agent *ancestor;
+    std::shared_ptr<Agent> ancestor;
     
 public:
-    Agent(int amount, Agent *ancestor = NULL);
-    Agent(std::vector<double> genome, Agent *ancestor = NULL);
-    Agent(std::initializer_list<double> genome, Agent *ancestor = NULL);
+    Agent(int amount, std::shared_ptr<Agent> ancestor = nullptr);
+    Agent(std::vector<double> genome, std::shared_ptr<Agent> ancestor = nullptr);
+    Agent(std::initializer_list<double> genome, std::shared_ptr<Agent> ancestor = nullptr);
     
     std::shared_ptr<Agent> make_offspring();
+    std::shared_ptr<Agent> get_ancestor();
     
     // Returns a number from 0 to length of genome - 1
     int play();

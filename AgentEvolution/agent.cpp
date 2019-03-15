@@ -38,7 +38,7 @@ void normalize(std::vector<double>& vec, std::vector<double>& added) {
     }
 }
 
-Agent::Agent(int amount, Agent *ancestor) : ancestor(ancestor) {
+Agent::Agent(int amount, std::shared_ptr<Agent> ancestor) : ancestor(ancestor) {
     for(int i = 0; i < amount; i++) {
         double num = (double) rand() / RAND_MAX;
         genome.push_back(num);
@@ -49,7 +49,7 @@ Agent::Agent(int amount, Agent *ancestor) : ancestor(ancestor) {
     
 }
 
-Agent::Agent(std::vector<double> genome, Agent *ancestor) : ancestor(ancestor) {
+Agent::Agent(std::vector<double> genome, std::shared_ptr<Agent> ancestor) : ancestor(ancestor) {
     this->genome = genome;
     for(auto it = genome.begin(); it != genome.end(); it++)
         genome_added.push_back(*it);
@@ -57,7 +57,7 @@ Agent::Agent(std::vector<double> genome, Agent *ancestor) : ancestor(ancestor) {
     normalize(this->genome, genome_added);
 }
 
-Agent::Agent(std::initializer_list<double> gen, Agent *ancestor) : ancestor(ancestor) {
+Agent::Agent(std::initializer_list<double> gen, std::shared_ptr<Agent> ancestor) : ancestor(ancestor) {
     for(double g : gen) {
         genome.push_back(g);
         genome_added.push_back(g);
@@ -74,8 +74,12 @@ std::shared_ptr<Agent> Agent::make_offspring() {
         mutation.push_back(v);
     }
     
-    std::shared_ptr<Agent> p = std::make_shared<Agent>(mutation, this);
+    std::shared_ptr<Agent> p = std::make_shared<Agent>(mutation, std::make_shared<Agent>(*this));
     return p;
+}
+
+std::shared_ptr<Agent> Agent::get_ancestor() {
+    return ancestor;
 }
 
 int Agent::play() {
