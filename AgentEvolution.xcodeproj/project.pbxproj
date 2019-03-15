@@ -10,6 +10,7 @@
 		E24F5BEC2238315A00C84E3E /* population.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E24F5BEA2238315A00C84E3E /* population.cpp */; };
 		E25186EB22369BC300EC94E2 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E25186EA22369BC300EC94E2 /* main.cpp */; };
 		E25186F322369C4F00EC94E2 /* agent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E25186F122369C4F00EC94E2 /* agent.cpp */; };
+		E2D6E117223C47F200D57075 /* randwrap.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E2D6E115223C47F200D57075 /* randwrap.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -32,6 +33,8 @@
 		E25186F122369C4F00EC94E2 /* agent.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = agent.cpp; sourceTree = "<group>"; };
 		E25186F222369C4F00EC94E2 /* agent.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = agent.hpp; sourceTree = "<group>"; };
 		E27EE58E223AF90C00EDB078 /* cxxopts.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = cxxopts.hpp; sourceTree = "<group>"; };
+		E2D6E115223C47F200D57075 /* randwrap.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = randwrap.cpp; sourceTree = "<group>"; };
+		E2D6E116223C47F200D57075 /* randwrap.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = randwrap.hpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -68,6 +71,8 @@
 				E27EE58E223AF90C00EDB078 /* cxxopts.hpp */,
 				E24F5BEA2238315A00C84E3E /* population.cpp */,
 				E24F5BEB2238315A00C84E3E /* population.hpp */,
+				E2D6E115223C47F200D57075 /* randwrap.cpp */,
+				E2D6E116223C47F200D57075 /* randwrap.hpp */,
 				E25186F122369C4F00EC94E2 /* agent.cpp */,
 				E25186F222369C4F00EC94E2 /* agent.hpp */,
 			);
@@ -130,6 +135,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E2D6E117223C47F200D57075 /* randwrap.cpp in Sources */,
 				E25186EB22369BC300EC94E2 /* main.cpp in Sources */,
 				E25186F322369C4F00EC94E2 /* agent.cpp in Sources */,
 				E24F5BEC2238315A00C84E3E /* population.cpp in Sources */,

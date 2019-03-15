@@ -7,6 +7,7 @@
 //
 
 #include "population.hpp"
+#include "randwrap.hpp"
 
 void Population::play_games() {
     //    R   P   S
@@ -45,22 +46,19 @@ void Population::play_games() {
 // winner_amount must be in range [1, population_size]
 void Population::evaluate(int winner_amount) {
     
-    /* worst score to be added to every score so we don't have to deal with negative scores */
-    int offset = 0;
-    int max = 0;
-    for(auto it = agents.begin(); it != agents.end(); ++it) {
-        if((*it)->get_score() < offset)
-            offset = (*it)->get_score();
-        
-        else if((*it)->get_score() > max)
-            max = (*it)->get_score();
-    }
+    /* worst score (offset) to be added to every score so we don't have to deal with negative scores */
+    auto minmax = std::minmax_element(agents.begin(), agents.end(), [](auto a1, auto a2){ return a1->get_score() < a2->get_score(); });
+    int offset = (*minmax.first)->get_score();
+    int max = (*minmax.second)->get_score();
+    
+    // worst score has to be at least 1
     offset = -offset + 1;
+    // for range for random numbers
     max += offset;
     
     // random number generator
-    std::uniform_int_distribution<std::mt19937::result_type> dist_population(0, population_size-1);
-    std::uniform_int_distribution<std::mt19937::result_type> dist_threshold(0, max);
+    std::uniform_int_distribution<> dist_population(0, population_size-1);
+    std::uniform_int_distribution<> dist_threshold(0, max);
     
     /* choose winners */
     std::vector<int> winners;
@@ -70,10 +68,10 @@ void Population::evaluate(int winner_amount) {
         // choose random agent that hasn't appeared in winners yet
         int potential_winner;
         do {
-            potential_winner = dist_population(rng);
+            potential_winner = rw::rand_int(dist_population);
         } while(std::find(winners.begin(), winners.end(), potential_winner) != winners.end());
         
-        int threshold = dist_threshold(rng);
+        int threshold = rw::rand_int(dist_threshold);
         if(agents[potential_winner]->get_score() + offset > threshold) {
             winners.push_back(potential_winner);
         }
@@ -95,16 +93,9 @@ void Population::evaluate(int winner_amount) {
 }
 
 std::vector<double> Population::get_best_strategy() {
-    auto it = agents.begin();
-    std::shared_ptr<Agent> top = *it;
+    auto top = std::max_element(agents.begin(), agents.end(), [](auto a1, auto a2){ return *a1 < *a2; });
     
-    while(++it != agents.end()) {
-        if(**it > *top) {
-            top = *it;
-        }
-    }
-    
-    return top->get_genome();
+    return (*top)->get_genome();
 }
 
 std::vector<double> Population::get_avg_strategy() {

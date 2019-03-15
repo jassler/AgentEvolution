@@ -18,9 +18,6 @@ private:
     std::vector<std::shared_ptr<Agent>> agents;
     unsigned int population_size;
     
-    std::random_device dev;
-    std::mt19937 rng;
-    
 public:
     template<class ..._Args>
     Population(unsigned int population_size, _Args&& ...__args);
@@ -41,10 +38,10 @@ public:
     }
 };
 
+// template constructor must stay in header
 template<class ..._Args>
 Population::Population(unsigned int population_size, _Args&& ...__args) {
     this->population_size = population_size;
-    rng = std::mt19937(dev());
     
     // create all agents
     for(unsigned int i = 0; i < population_size; ++i) {

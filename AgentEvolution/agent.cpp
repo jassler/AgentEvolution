@@ -7,72 +7,77 @@
 //
 
 #include "agent.hpp"
+#include "randwrap.hpp"
 #include <stdlib.h>
 #include <time.h>
 #include <algorithm>
 #include <cmath>
 
 // all elements of vector have to add up to 1
-void normalize(std::vector<double>& vec, std::vector<double>& added) {
+void Agent::normalize() {
     double sum = 0;
     
-    // account for negative numbers - can only normalize positive stuff
-    double min = 0;
-    for(auto it = vec.begin(); it != vec.end(); ++it) {
-        if(*it < min)
-            min = *it;
+    // sum up
+    for(int i = 0; i < genome.size(); i++) {
+        sum += genome[i];
     }
     
-    // sum up
-    for(int i = 0; i < vec.size(); i++) {
-        sum += vec[i] - min;
+    // if sum is zero, then all indeces must be zero (extremely unlikely, but who knows)
+    // -> set random index to 1
+    if(sum == 0) {
+        int index = rw::rand_int(dist_index);
+        genome[index] = 1;
+        sum = 1;
     }
     
     // div by sum
     double added_sum = 0;
-    for(int i = 0; i < vec.size(); i++) {
-        vec[i] /= sum;
+    for(int i = 0; i < genome.size(); i++) {
+        genome[i] /= sum;
         
-        added_sum += vec[i];
-        added[i] = added_sum;
+        added_sum += genome[i];
+        genome_added[i] = added_sum;
     }
 }
 
-Agent::Agent(int amount, std::shared_ptr<Agent> ancestor) : ancestor(ancestor) {
+Agent::Agent(int amount, std::shared_ptr<Agent> ancestor) : ancestor(ancestor), dist_index(0, amount-1) {
+    
+    genome_added.reserve(amount);
+    
     for(int i = 0; i < amount; i++) {
-        double num = (double) rand() / RAND_MAX;
-        genome.push_back(num);
-        genome_added.push_back(num);
+        double r = rw::from_unit_interval();
+        genome.push_back(r);
     }
     
-    normalize(genome, genome_added);
+    normalize();
     
 }
 
-Agent::Agent(std::vector<double> genome, std::shared_ptr<Agent> ancestor) : ancestor(ancestor) {
-    this->genome = genome;
-    for(auto it = genome.begin(); it != genome.end(); it++)
-        genome_added.push_back(*it);
+Agent::Agent(std::vector<double> gen, std::shared_ptr<Agent> ancestor) : ancestor(ancestor), dist_index(0, (unsigned int) gen.size()-1) {
+    genome_added.reserve(gen.size());
     
-    normalize(this->genome, genome_added);
+    this->genome = gen;
+    
+    normalize();
 }
 
-Agent::Agent(std::initializer_list<double> gen, std::shared_ptr<Agent> ancestor) : ancestor(ancestor) {
+Agent::Agent(std::initializer_list<double> gen, std::shared_ptr<Agent> ancestor) : ancestor(ancestor), dist_index(0, (unsigned int) gen.size()-1) {
+    genome_added.reserve(gen.size());
+    
     for(double g : gen) {
         genome.push_back(g);
-        genome_added.push_back(g);
     }
     
-    normalize(genome, genome_added);
+    normalize();
 }
 
 std::shared_ptr<Agent> Agent::make_offspring() {
-    std::vector<double> mutation;
-    for(auto it = genome.begin(); it != genome.end(); ++it) {
-        // variation between +/- 2.5%
-        double v = *it + (*it * ((double) rand() / RAND_MAX * 0.05 - 0.025));
-        mutation.push_back(v);
-    }
+    std::vector<double> mutation = genome;
+    
+    int index = rw::rand_int(dist_index);
+    double r = rw::from_unit_interval();
+    
+    mutation[index] = r;
     
     std::shared_ptr<Agent> p = std::make_shared<Agent>(mutation, std::make_shared<Agent>(*this));
     return p;
@@ -83,7 +88,7 @@ std::shared_ptr<Agent> Agent::get_ancestor() {
 }
 
 int Agent::play() {
-    double r = (double) rand() / RAND_MAX;
+    double r = rw::from_unit_interval();
     int index = 0;
     while(r >= genome_added[index] && index < genome.size() - 1) {
         index++;

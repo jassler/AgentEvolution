@@ -117,50 +117,82 @@ cxxopts::ParseResult parse(int argc, char* argv[]) {
     }
 }
 
-int print_ancestors(const std::shared_ptr<Agent> a, std::ostream& os) {
+int print_ancestors(const std::shared_ptr<Agent> a, std::ifstream& infile, std::ofstream& outfile) {
+    std::string str;
+    
     if(a == nullptr) {
+        // header row of csv-file
+        std::getline(infile, str);
+        outfile << str << '\n';
         return 0;
     }
     
-    int index = print_ancestors(a->get_ancestor(), os);
-    os << index;
+    int index = print_ancestors(a->get_ancestor(), infile, outfile);
+    std::getline(infile, str);
+    outfile << str;
     
     auto genome = a->get_genome();
     
     for(auto it = genome.begin(); it != genome.end(); ++it) {
-        os << ';' << *it;
+        outfile << ';' << *it;
     }
-    os << '\n';
+    outfile << '\n';
     
     return index + 1;
 }
 
-
 int main(int argc, char *argv[]) {
     srand((unsigned int) time(NULL));
     
+    int population_size = 100;
+    int generations = 500;
+    
+    std::string filename = "result.csv";
+    
+    // TODO argument parsing
     auto result = parse(argc, argv);
     
-    std::ofstream file("result.csv");
-    file << "Generation;Avg Rock;Avg Paper;Avg Scissor;Best Rock; Best Paper; Best Scissor\n";
-
-    Population population(1000, 3);
     
+    std::string tmp_file = "temporaryfile_deleteme.csv";
+    std::ofstream file(tmp_file);
+    file << "Generation;";
+    
+    // average for whole generation
+    file << "Avg Rock;Avg Paper;Avg Scissor;";
+    
+    // statregy of agent who's won the most games
+    file << "Best Rock;Best Paper;Best Scissor;";
+    
+    // line of descent, added recursively at the end
+    file << "LOD Rock;LOD Paper;LOD Scissor\n";
 
-    for(int i = 0; i < 100; ++i) {
+    Population population(population_size, 3);
+
+    for(int i = 0; i <= generations; ++i) {
         population.play_games();
 
-        std::vector<double> best = population.get_best_strategy();
         std::vector<double> avg = population.get_avg_strategy();
+        std::vector<double> best = population.get_best_strategy();
 
-        file << i << ";" << avg[0] << ";" << avg[1] << ";" << avg[2] << ";" << best[0] << ";" << best[1] << ";" << best[2] << "\n";
-        std::cout << i << "%\n";
-
-        population.evaluate(100);
+        file << i << ";";
+        file << avg[0] << ";" << avg[1] << ";" << avg[2] << ";";
+        file << best[0] << ";" << best[1] << ";" << best[2] << "\n";
+        
+        // print % done
+        if((i - 1) * 100 / generations != i * 100 / generations) {
+            std::cout << i * 100 / generations << "%\n";
+        }
+        
+        if(i < generations) {
+            population.evaluate(100);
+        }
     }
     
-    file << "Generation;Strat Rock;Strat Paper;Strat Scissor\n";
-    print_ancestors(population[0], file);
-
     file.close();
+    
+    std::ifstream infile(tmp_file);
+    file = std::ofstream(filename);
+    
+    
+    print_ancestors(population[0], infile, file);
 }
