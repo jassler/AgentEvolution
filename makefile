@@ -1,18 +1,33 @@
 CC = g++
 INC = -Iinc
-CFLAGS = -std=c++17
+CFLAGS = -std=c++17 -O3
 
 ODIR = bin
-OBJDIR = $(OUTBIN)/objs
+OBJDIR = $(ODIR)/objs
+OFILE = $(ODIR)/agentevolver
 SDIR = AgentEvolution
 
-_OBJS = main.o agent.o population.o
-OBJS = $(pathsubst %,$(OBJDIR)/%,$(_OBJS))
+_OBJS = main.o agent.o population.o randwrap.o
+OBJS = $(patsubst %,$(OBJDIR)/%,$(_OBJS))
 
-$(ODIR)/%.o: $(SDIR)/%.cpp
+# main output
+$(OFILE): $(OBJS)
+	$(CC) -o $(ODIR)/agentevolver $(CFLAGS) $(OBJS)
+
+# all object files only depend on their corresponding .cpp-files
+# mostly gotten from here: https://stackoverflow.com/questions/1814270
+$(OBJDIR)/%.o: $(SDIR)/%.cpp
+	@mkdir -p $(@D)
 	$(CC) -c $(INC) -o $@ $< $(CFLAGS)
 
-.PHONY: clean
+# according to GNU, 'make print' should display all cpp files that have changed.
+# not really working though (wrong directory?)
+# https://www.gnu.org/software/make/manual/make.html#Wildcard-Examples
+print: $(SDIR)/*.cpp
+	lpr -p $?
+	touch $(SDIR)/print
 
+
+.PHONY: clean
 clean:
-	rm -f $(ODIR)/*.o $(OBJDIR)/*.o
+	rm -f $(OFILE) $(OBJDIR)/*.o

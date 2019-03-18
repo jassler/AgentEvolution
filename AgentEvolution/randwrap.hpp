@@ -17,6 +17,7 @@ namespace rw {
     double from_unit_interval();
     
     int rand_int(std::uniform_int_distribution<> dist);
+    int rand_int(int low, int high);
 }
 
 #endif /* randwrap_hpp */

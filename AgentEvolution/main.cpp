@@ -8,98 +8,46 @@
 
 #include "agent.hpp"
 #include "population.hpp"
+#include "randwrap.hpp"
 #include "cxxopts.hpp"
 #include <iostream>
 #include <random>
 #include <fstream>
 #include <time.h>
+#include <sys/stat.h>
 
-#define NUM_AGENTS 1000
+#define M_PRINTF(f_, ...) if(verbose) printf((f_ "\n"), __VA_ARGS__)
 
-//        // 1. decrement all by 1-5%
-//        std::vector<double> genome = it->get_genome();
-//        for(auto it = genome.begin(); it != genome.end(); ++it) {
-//            double num = (double) rand() / RAND_MAX / 20 + 0.01;
-//            *it = *it - (*it * num);
-//        }
-//        // constructor automatically normalizes genome-vector
-//        agents.push_back(Agent(genome));
-//
-//
-//        // 2. increment all by 1-5%
-//        genome = it->get_genome();
-//        for(auto it = genome.begin(); it != genome.end(); ++it) {
-//            double num = (double) rand() / RAND_MAX / 20 + 0.01;
-//            *it = *it + (*it * num);
-//        }
-//        agents.push_back(Agent(genome));
-//
-//        // 3. range [-1%,1%]
-//        genome = it->get_genome();
-//        for(auto it = genome.begin(); it != genome.end(); ++it) {
-//            double num = (double) rand() / RAND_MAX / 50 - 0.01;
-//            *it = *it + (*it * num);
-//        }
-//        agents.push_back(Agent(genome));
-//
-//        // 4. favor index 0
-//        genome = it->get_genome();
-//        double num = (double) rand() / RAND_MAX / 20 + 0.01;
-//        genome[0] += (genome[0] * num);
-//        agents.push_back(Agent(genome));
-//
-//        // 5. favor index 1
-//        genome = it->get_genome();
-//        num = (double) rand() / RAND_MAX / 20 + 0.01;
-//        genome[1] += (genome[1] * num);
-//        agents.push_back(Agent(genome));
-//
-//        // 6. favor index 2
-//        genome = it->get_genome();
-//        num = (double) rand() / RAND_MAX / 20 + 0.01;
-//        genome[2] += (genome[2] * num);
-//        agents.push_back(Agent(genome));
-//
-//        // 7. dis-favor index 0
-//        genome = it->get_genome();
-//        num = (double) rand() / RAND_MAX / 20 + 0.01;
-//        genome[0] -= (genome[0] * num);
-//        agents.push_back(Agent(genome));
-//
-//        // 8. dis-favor index 1
-//        genome = it->get_genome();
-//        num = (double) rand() / RAND_MAX / 20 + 0.01;
-//        genome[1] -= (genome[1] * num);
-//        agents.push_back(Agent(genome));
-//
-//        // 9. dis-favor index 2
-//        genome = it->get_genome();
-//        num = (double) rand() / RAND_MAX / 20 + 0.01;
-//        genome[2] -= (genome[2] * num);
-//        agents.push_back(Agent(genome));
-//    }
 
-cxxopts::ParseResult parse(int argc, char* argv[]) {
+/*
+ * Parse command line arguments with cxxopts-library
+ * https://github.com/jarro2783/cxxopts
+ *
+ * Currently accepted flags:
+ * --agents <num>     : population size
+ * --opponents <num>  : opponents each agents has to play against
+ * --generations <num>: amount of generations to simulate
+ * --file <name>      : where to save the output file
+ * --verbose          : output info
+ * --help             : show list of accepted flags
+ */
+cxxopts::ParseResult parse(int argc, char* argv[],
+                           unsigned int& num_agents, unsigned int& num_opponents, unsigned int& num_generations,
+                           std::string& filename, bool& verbose) {
     using namespace cxxopts;
     
     try {
-        Options options(argv[0], " - command line options");
+        Options options(argv[0], " - simulate agent based games over multiple generations");
         options.positional_help("[optional args]").show_positional_help();
-        
-        unsigned int agent_amount = 1000;
-        unsigned int opponent_amount = 999;
-        unsigned int generations = 1000;
-        
-        std::string filename = "result.csv";
         
         options
             .allow_unrecognised_options()
             .add_options()
-            ("a,agents", "number of agents for each generation", value<unsigned int>(agent_amount))
-            ("o,opponents", "number of opponents each agent plays against", value<unsigned int>(opponent_amount))
-            ("g,generations", "number of generations to simulate", value<unsigned int>(generations))
+            ("a,agents", "number of agents for each generation", value<unsigned int>(num_agents))
+            ("o,opponents", "number of opponents each agent plays against", value<unsigned int>(num_opponents))
+            ("g,generations", "number of generations to simulate", value<unsigned int>(num_generations))
             ("f,file", "file to store results in", value<std::string>(filename))
-            ("v,verbose", "log output messages", value<bool>()->default_value("false"))
+            ("v,verbose", "log output messages", value<bool>(verbose))
             ("h,help", "view command line options");
         
         auto result = options.parse(argc, argv);
@@ -117,6 +65,7 @@ cxxopts::ParseResult parse(int argc, char* argv[]) {
     }
 }
 
+// work up ancestor tree of child node recursively, append genome to every row of infile
 int print_ancestors(const std::shared_ptr<Agent> a, std::ifstream& infile, std::ofstream& outfile) {
     std::string str;
     
@@ -144,17 +93,24 @@ int print_ancestors(const std::shared_ptr<Agent> a, std::ifstream& infile, std::
 int main(int argc, char *argv[]) {
     srand((unsigned int) time(NULL));
     
-    int population_size = 100;
-    int generations = 500;
+    // default options, may be overwritten by command line arguments
+    unsigned int population_size = 500;
+    unsigned int opponents = 999; // TODO: opponents isn't used yet
+    unsigned int generations = 500;
     
     std::string filename = "result.csv";
+    bool verbose = false;
     
-    // TODO argument parsing
-    auto result = parse(argc, argv);
+    auto result = parse(argc, argv,
+                        population_size, opponents, generations,
+                        filename, verbose);
     
+    M_PRINTF("%5d agents per generation", population_size);
+    M_PRINTF("%5d opponents each player takes on", opponents);
+    M_PRINTF("%5d generations being simulated", generations);
     
-    std::string tmp_file = "temporaryfile_deleteme.csv";
-    std::ofstream file(tmp_file);
+    std::ofstream file(filename);
+    
     file << "Generation;";
     
     // average for whole generation
@@ -180,19 +136,21 @@ int main(int argc, char *argv[]) {
         
         // print % done
         if((i - 1) * 100 / generations != i * 100 / generations) {
-            std::cout << i * 100 / generations << "%\n";
+            std::cout << '\r' << i * 100 / generations << '%' << std::flush;
         }
         
         if(i < generations) {
             population.evaluate(100);
         }
     }
+
+    std::cout << "\rDone\n";
     
     file.close();
     
-    std::ifstream infile(tmp_file);
+    // is this ok? (creating in-file and out-file for same filename)
+    std::ifstream infile(filename);
     file = std::ofstream(filename);
-    
     
     print_ancestors(population[0], infile, file);
 }
