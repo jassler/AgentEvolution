@@ -8,6 +8,8 @@
 
 #include "population.hpp"
 #include "randwrap.hpp"
+#include <algorithm>
+#include <utility>
 
 void Population::play_games() {
     //    R   P   S
@@ -21,23 +23,32 @@ void Population::play_games() {
         { -1,  1,  0 }
     };
     
+    std::shuffle(agents.begin(), agents.end(), rw::get_mt());
+    
+    // opponents agent play against
+    auto it_opp = agents.begin();
+    
+    // every player playes n games
     for(auto it_agent = agents.begin(); it_agent != agents.end(); ++it_agent) {
         
-        // opponent that agent is playing against
-        auto it_opp = it_agent;
-        for(int i = 0; i < population_size - 1; ++i) {
+        for(int i = 0; i < opp_amount; ++i) {
             ++it_opp;
             if(it_opp == agents.end()) {
                 // loop back to first player
                 it_opp = agents.begin();
             }
             
-            int p1 = (*it_agent)->play();
-            int p2 = (*it_opp)->play();
+            if(it_opp == it_agent) {
+                // don't play against yourself
+                ++it_opp;
+            }
+            
+            int p1 = it_agent->play();
+            int p2 = it_opp->play();
             int res = payoff_matrix[p1][p2];
             
-            (*it_agent)->play_result(res);
-            (*it_opp)->play_result(-res);
+            it_agent->play_result(res);
+            it_opp->play_result(-res);
         }
     }
 }
@@ -47,9 +58,9 @@ void Population::play_games() {
 void Population::evaluate(int winner_amount) {
     
     /* worst score (offset) to be added to every score so we don't have to deal with negative scores */
-    auto minmax = std::minmax_element(agents.begin(), agents.end(), [](auto a1, auto a2){ return a1->get_score() < a2->get_score(); });
-    int offset = (*minmax.first)->get_score();
-    int max = (*minmax.second)->get_score();
+    auto minmax = std::minmax_element(agents.begin(), agents.end(), [](auto a1, auto a2){ return a1.get_score() < a2.get_score(); });
+    int offset = minmax.first->get_score();
+    int max = minmax.second->get_score();
     
     // worst score has to be at least 1
     offset = -offset + 1;
@@ -57,7 +68,6 @@ void Population::evaluate(int winner_amount) {
     max += offset;
     
     // random number generator
-    std::uniform_int_distribution<> dist_population(0, population_size-1);
     std::uniform_int_distribution<> dist_threshold(0, max);
     
     /* choose winners */
@@ -66,22 +76,23 @@ void Population::evaluate(int winner_amount) {
     while(winners.size() < winner_amount) {
         
         // choose random agent that hasn't appeared in winners yet
-        int potential_winner;
-        do {
-            potential_winner = rw::rand_int(dist_population);
-        } while(std::find(winners.begin(), winners.end(), potential_winner) != winners.end());
+        int potential_winner = rw::rand_int(0, (int) (population_size - 1 - winners.size()));
+//        do {
+//            potential_winner = rw::rand_int(dist_population);
+//        } while(std::find(winners.begin(), winners.end(), potential_winner) != winners.end());
         
         int threshold = rw::rand_int(dist_threshold);
-        if(agents[potential_winner]->get_score() + offset > threshold) {
+        if(agents[potential_winner].get_score() + offset > threshold) {
             winners.push_back(potential_winner);
+            std::swap(agents[potential_winner], agents[population_size - 1 - winners.size()]);
         }
     }
     
     /* create offsprings */
     auto win_it = winners.begin();
-    std::vector<std::shared_ptr<Agent>> next_generation;
+    std::vector<Agent> next_generation;
     while(next_generation.size() < population_size) {
-        next_generation.push_back(agents[*win_it]->make_offspring());
+        next_generation.push_back(agents[*win_it].make_offspring());
         
         ++win_it;
         if(win_it == winners.end()) {
@@ -93,25 +104,24 @@ void Population::evaluate(int winner_amount) {
 }
 
 std::vector<double> Population::get_best_strategy() {
-    auto top = std::max_element(agents.begin(), agents.end(), [](auto a1, auto a2){ return *a1 < *a2; });
+    auto top = std::max_element(agents.begin(), agents.end(), [](auto a1, auto a2){ return a1 < a2; });
     
-    return (*top)->get_genome();
+    return top->get_genome();
 }
 
 std::vector<double> Population::get_avg_strategy() {
     auto it = agents.begin();
-    std::vector<double> result = (*it)->get_genome();
+    auto result = it->get_genome();
     
+    // TODO accumulate
     while(++it != agents.end()) {
-        auto it_gen = (*it)->get_genome();
+        auto it_gen = it->get_genome();
         for(int i = 0; i < result.size(); ++i) {
             result[i] += it_gen[i];
         }
     }
     
-    for(int i = 0; i < result.size(); ++i) {
-        result[i] /= (double) population_size;
-    }
+    std::transform(result.begin(), result.end(), result.begin(), [this](auto& item){return item / population_size; });
     
     return result;
 }

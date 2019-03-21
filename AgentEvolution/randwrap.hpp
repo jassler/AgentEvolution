@@ -18,6 +18,8 @@ namespace rw {
     
     int rand_int(std::uniform_int_distribution<> dist);
     int rand_int(int low, int high);
+    
+    std::mt19937 get_mt();
 }
 
 #endif /* randwrap_hpp */

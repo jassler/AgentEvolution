@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<VariablesViewState
+   version = "1.0">
+   <ContextStates>
+      <ContextState
+         contextName = "Agent::normalize():agent.cpp">
+         <PersistentStrings>
+            <PersistentString
+               value = "*(this-&gt;genome.begin())">
+            </PersistentString>
+            <PersistentString
+               value = "*(this-&gt;genome.end()-1)">
+            </PersistentString>
+            <PersistentString
+               value = "std::accumulate(this-&gt;genome.begin(), this-&gt;genome.end(), 0)">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "Agent::play():agent.cpp">
+      </ContextState>
+   </ContextStates>
+</VariablesViewState>

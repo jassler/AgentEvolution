@@ -9,18 +9,22 @@
 #ifndef agent_hpp
 #define agent_hpp
 
+#include "matrix.hpp"
 #include <vector>
-#include <memory>
 #include <iostream>
 #include <random>
 
 class Agent {
 private:
+    std::vector<double> phenotype;
+    Matrix matrix;
     std::vector<double> genome;
+    
     std::vector<double> genome_added;
     int score = 0;
     
     std::shared_ptr<Agent> ancestor;
+    std::shared_ptr<Agent> me;
     
     // random index for genome
     std::uniform_int_distribution<> dist_index;
@@ -30,10 +34,11 @@ private:
 public:
     Agent(int amount, std::shared_ptr<Agent> ancestor = nullptr);
     Agent(std::vector<double> genome, std::shared_ptr<Agent> ancestor = nullptr);
+    Agent(Matrix genome, std::shared_ptr<Agent> ancestor = nullptr);
     Agent(std::initializer_list<double> genome, std::shared_ptr<Agent> ancestor = nullptr);
     
-    std::shared_ptr<Agent> make_offspring();
-    std::shared_ptr<Agent> get_ancestor();
+    Agent make_offspring() const;
+    std::shared_ptr<Agent> get_ancestor() const;
     
     // Returns a number from 0 to length of genome - 1
     int play();
@@ -41,9 +46,9 @@ public:
     void play_result(int points);
     
     void reset_score();
-    int get_score();
-    std::vector<double> get_genome();
-    unsigned long size();
+    int get_score() const;
+    std::vector<double> get_genome() const;
+    unsigned long size() const;
     
     double operator[] (int);
     bool operator< (const Agent& a) const;

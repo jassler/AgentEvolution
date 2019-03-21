@@ -41,4 +41,8 @@ namespace rw {
         
         return dist_it->second(rng);
     }
+    
+    std::mt19937 get_mt() {
+        return rng;
+    }
 };

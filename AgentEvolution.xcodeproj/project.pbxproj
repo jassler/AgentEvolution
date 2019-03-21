@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		E23890DF22413254001179AD /* argparser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E23890DD22413254001179AD /* argparser.cpp */; };
+		E23890E2224177C6001179AD /* matrix.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E23890E0224177C6001179AD /* matrix.cpp */; };
 		E24F5BEC2238315A00C84E3E /* population.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E24F5BEA2238315A00C84E3E /* population.cpp */; };
 		E25186EB22369BC300EC94E2 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E25186EA22369BC300EC94E2 /* main.cpp */; };
 		E25186F322369C4F00EC94E2 /* agent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E25186F122369C4F00EC94E2 /* agent.cpp */; };
@@ -26,6 +28,10 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		E23890DD22413254001179AD /* argparser.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = argparser.cpp; sourceTree = "<group>"; };
+		E23890DE22413254001179AD /* argparser.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = argparser.hpp; sourceTree = "<group>"; };
+		E23890E0224177C6001179AD /* matrix.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = matrix.cpp; sourceTree = "<group>"; };
+		E23890E1224177C6001179AD /* matrix.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = matrix.hpp; sourceTree = "<group>"; };
 		E24F5BEA2238315A00C84E3E /* population.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = population.cpp; sourceTree = "<group>"; };
 		E24F5BEB2238315A00C84E3E /* population.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = population.hpp; sourceTree = "<group>"; };
 		E25186E722369BC300EC94E2 /* AgentEvolution */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = AgentEvolution; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -67,14 +73,18 @@
 		E25186E922369BC300EC94E2 /* AgentEvolution */ = {
 			isa = PBXGroup;
 			children = (
-				E25186EA22369BC300EC94E2 /* main.cpp */,
+				E25186F122369C4F00EC94E2 /* agent.cpp */,
+				E25186F222369C4F00EC94E2 /* agent.hpp */,
+				E23890DD22413254001179AD /* argparser.cpp */,
+				E23890DE22413254001179AD /* argparser.hpp */,
 				E27EE58E223AF90C00EDB078 /* cxxopts.hpp */,
+				E25186EA22369BC300EC94E2 /* main.cpp */,
 				E24F5BEA2238315A00C84E3E /* population.cpp */,
 				E24F5BEB2238315A00C84E3E /* population.hpp */,
 				E2D6E115223C47F200D57075 /* randwrap.cpp */,
 				E2D6E116223C47F200D57075 /* randwrap.hpp */,
-				E25186F122369C4F00EC94E2 /* agent.cpp */,
-				E25186F222369C4F00EC94E2 /* agent.hpp */,
+				E23890E0224177C6001179AD /* matrix.cpp */,
+				E23890E1224177C6001179AD /* matrix.hpp */,
 			);
 			path = AgentEvolution;
 			sourceTree = "<group>";
@@ -136,6 +146,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				E2D6E117223C47F200D57075 /* randwrap.cpp in Sources */,
+				E23890DF22413254001179AD /* argparser.cpp in Sources */,
+				E23890E2224177C6001179AD /* matrix.cpp in Sources */,
 				E25186EB22369BC300EC94E2 /* main.cpp in Sources */,
 				E25186F322369C4F00EC94E2 /* agent.cpp in Sources */,
 				E24F5BEC2238315A00C84E3E /* population.cpp in Sources */,

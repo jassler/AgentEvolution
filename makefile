@@ -7,7 +7,7 @@ OBJDIR = $(ODIR)/objs
 OFILE = $(ODIR)/agentevolver
 SDIR = AgentEvolution
 
-_OBJS = main.o agent.o population.o randwrap.o
+_OBJS = main.o agent.o argparser.o population.o randwrap.o matrix.o
 OBJS = $(patsubst %,$(OBJDIR)/%,$(_OBJS))
 
 # main output
@@ -26,6 +26,10 @@ $(OBJDIR)/%.o: $(SDIR)/%.cpp
 print: $(SDIR)/*.cpp
 	lpr -p $?
 	touch $(SDIR)/print
+
+.PHONY: test
+test:
+	make -C ./tests
 
 
 .PHONY: clean
