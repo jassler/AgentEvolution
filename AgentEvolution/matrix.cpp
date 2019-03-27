@@ -51,12 +51,16 @@ Matrix::~Matrix() {
     delete[] m;
 }
 
-const size_t Matrix::width() const {
+size_t Matrix::width() const {
     return w;
 }
 
-const size_t Matrix::height() const {
+size_t Matrix::height() const {
     return h;
+}
+
+size_t Matrix::size() const {
+    return w * h;
 }
 
 Matrix operator*(const Matrix& a, const Matrix& b) {

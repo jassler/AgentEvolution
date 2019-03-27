@@ -7,7 +7,7 @@ OBJDIR = $(ODIR)/objs
 OFILE = $(ODIR)/agentevolver
 SDIR = AgentEvolution
 
-_OBJS = main.o agent.o argparser.o population.o randwrap.o matrix.o
+_OBJS = main.o agent.o argparser.o matrix.o population.o randwrap.o
 OBJS = $(patsubst %,$(OBJDIR)/%,$(_OBJS))
 
 # main output

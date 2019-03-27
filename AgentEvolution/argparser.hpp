@@ -19,8 +19,9 @@ namespace args {
     
     // default options, may be overwritten by command line arguments
     extern unsigned int population_size;
-    extern unsigned int opponents; // TODO: opponents isn't used yet
+    extern unsigned int opponents;
     extern unsigned int generations;
+    extern unsigned int winners;
     extern std::vector<double> mutation_probs;
     
     extern std::string filename;
@@ -31,12 +32,14 @@ namespace args {
     * https://github.com/jarro2783/cxxopts
     *
     * Currently accepted flags:
-    * --agents <num>     : population size
-    * --opponents <num>  : opponents each agents has to play against
-    * --generations <num>: amount of generations to simulate
-    * --file <name>      : where to save the output file
-    * --verbose          : output info
-    * --help             : show list of accepted flags
+    * --agents <num>       : population size
+    * --opponents <num>    : opponents each agents has to play against
+    * --generations <num>  : amount of generations to simulate
+    * --winners <num>      : amount of agents that allowed to make offsprings after each generation
+    * --probabilities <num>: probability for each genome to mutate
+    * --file <name>        : where to save the output file
+    * --verbose            : output info
+    * --help               : show list of accepted flags
     */
     void parse(int argc, char* argv[]);
 }

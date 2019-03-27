@@ -3,21 +3,26 @@
    version = "1.0">
    <ContextStates>
       <ContextState
-         contextName = "Agent::normalize():agent.cpp">
+         contextName = "Population::play_games():population.cpp">
          <PersistentStrings>
             <PersistentString
-               value = "*(this-&gt;genome.begin())">
+               value = "sizeof(size_t)">
             </PersistentString>
             <PersistentString
-               value = "*(this-&gt;genome.end()-1)">
-            </PersistentString>
-            <PersistentString
-               value = "std::accumulate(this-&gt;genome.begin(), this-&gt;genome.end(), 0)">
+               value = "(unsigned int) p1">
             </PersistentString>
          </PersistentStrings>
       </ContextState>
       <ContextState
+         contextName = "Agent::normalize():agent.cpp">
+      </ContextState>
+      <ContextState
          contextName = "Agent::play():agent.cpp">
+         <PersistentStrings>
+            <PersistentString
+               value = "std::distance(genome_added.begin(), it)">
+            </PersistentString>
+         </PersistentStrings>
       </ContextState>
    </ContextStates>
 </VariablesViewState>

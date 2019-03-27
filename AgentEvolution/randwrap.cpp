@@ -45,4 +45,8 @@ namespace rw {
     std::mt19937 get_mt() {
         return rng;
     }
+    
+    void set_seed(std::mt19937::result_type seed) {
+        rng = std::mt19937(seed);
+    }
 };

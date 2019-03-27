@@ -19,61 +19,25 @@
 #include <time.h>
 #include <sys/stat.h>
 
+#include <csignal>
 
 class ResultFile {
 private:
-    const std::string filename, tmpfile;
+    std::string filename, tmpfile;
     
     std::ofstream out_file;
     std::ifstream in_file;
     
-    bool changed;
-    
-    // check if file name already exists (to create tmp file)
-    // gotten from here: https://stackoverflow.com/questions/12774207
-    inline bool file_exists (const std::string& name) {
-        struct stat buffer;
-        return (stat (name.c_str(), &buffer) == 0);
-    }
-    
-    // random 10-letter string (to create tmp file)
-    std::string random_jargon() {
-        const static char available[] =
-        "abcdefghijklmnopqrstuvwxyz"
-        "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-        "0123456789";
-        
-        std::string result = "";
-        for(int i = 0; i < 10; ++i) {
-            int r = rw::rand_int(0, sizeof(available) - 1);
-            result += available[r];
-        }
-        
-        return result;
-    }
-    
-    std::string find_tmpfile_name() {
-        // find random file name to temporarily store generation data without line of descent
-        std::string s = "tmpresult_";
-        std::string tmp;
-        do {
-            tmp = s + random_jargon() + ".csv";
-        } while(file_exists(tmp));
-        
-        return tmp;
-    }
+    int phase = WRITE_PREP;
     
 public:
-    ResultFile(std::string filename) : filename(filename), tmpfile(find_tmpfile_name()) {
-        
-        M_PRINTF("Temporary filename: %s", tmpfile.c_str());
-        out_file.open(tmpfile);
-        
-        changed = false;
-        
+    enum {WRITE_PREP, WRITE_TMP, WRITE_FILE, WRITE_DONE};
+    
+    explicit ResultFile(std::string filename) : filename(filename), tmpfile(filename + ".tmp") {
     }
     
     ~ResultFile() {
+        M_PRINTF("Closing streams for %s and %s", tmpfile.c_str(), filename.c_str());
         if(out_file.is_open())
             out_file.close();
         if(in_file.is_open())
@@ -85,29 +49,63 @@ public:
     
     template<class T>
     std::ofstream& operator<<(const T& t) {
+        if(phase != WRITE_TMP && phase != WRITE_FILE)
+            return out_file;
+        
         out_file << t;
         return out_file;
     }
     
     // read line, save to dest
     void operator>>(std::string& dest) {
+        if(phase != WRITE_FILE)
+            return;
+        
         std::getline(in_file, dest);
     }
     
-    void change_file() {
-        if(changed)
-            return;
+    bool change_file() {
+        if(phase != WRITE_TMP)
+            return false;
         
-        changed = true;
+        M_PRINTF("Closing temporary file: %s", tmpfile.c_str());
         out_file.close();
         in_file.open(tmpfile);
+        
+        M_PRINTF("Opening actual output file: %s", tmpfile.c_str());
         out_file.open(filename);
+        phase = WRITE_FILE;
+        return true;
+    }
+    
+    void set_filename(const std::string& filename) {
+        if(phase != WRITE_PREP)
+            return;
+        
+        this->tmpfile = filename + ".tmp";
+        this->filename = filename;
+        
+        M_PRINTF("Temporary filename: %s", tmpfile.c_str());
+    }
+    
+    // first operation: open file and start writing data
+    void start() {
+        if(phase != WRITE_PREP)
+            return;
+        
+        M_PRINTF("Opening temporary file: %s", tmpfile.c_str());
+        out_file.open(tmpfile);
+        phase = WRITE_TMP;
     }
 };
 
+// global population and ResultFile so we can save the file in case execution gets aborted
+Population population(0, 0, 0);
+ResultFile rf("result.csv");
+
 
 // work up ancestor tree of child node recursively, append genome to every row of infile
-int print_ancestors(const Agent& a, ResultFile& rf /*std::ifstream& infile, std::ofstream& outfile*/) {
+int print_ancestors(const Agent& a, ResultFile& rf) {
     std::string str;
     
     int index;
@@ -136,6 +134,7 @@ int print_ancestors(const Agent& a, ResultFile& rf /*std::ifstream& infile, std:
 
 void simulate_generations(Population& population, const int& generations, ResultFile& file) {
 
+    int prev_perc = -1;
     for(int i = 0; i <= generations; ++i) {
         population.play_games();
 
@@ -143,31 +142,41 @@ void simulate_generations(Population& population, const int& generations, Result
         auto best = population.get_best_strategy();
 
         file << i;
-        for(auto it = avg.begin(); it != avg.end(); ++it) {
-            file << args::separator << *it;
+        for(const auto& a : avg) {
+            file << args::separator << a;
         }
-        for(auto it = best.begin(); it != best.end(); ++it) {
-            file << args::separator << *it;
+        for(const auto& b : best) {
+            file << args::separator << b;
         }
         file << '\n';
         
         // print % done
-        if((i - 1) * 100 / generations != i * 100 / generations) {
-            std::cout << '\r' << i * 100 / generations << '%' << std::flush;
+        if(prev_perc != i * 100 / generations) {
+            prev_perc = i * 100 / generations;
+            std::cout << '\r' << prev_perc << '%' << std::flush;
         }
         
         // no need to evaluate last generation (otherwise we receive one "ancestor" too many)
         if(i < generations) {
-            population.evaluate(100);
+            population.evaluate(args::winners);
         }
     }
 
 }
 
+// if aborting, print ancestors from agent
+void signalHandler( int signum ) {
+    if(signum == SIGINT || signum == SIGABRT) {
+        if(rf.change_file()) {
+            print_ancestors(*population[0], rf);
+        }
+    }
+}
+
 
 int main(int argc, char *argv[]) {
-    srand((unsigned int) time(NULL));
-
+    signal(SIGINT, signalHandler);
+    
     args::parse(argc, argv);
 
     if(args::verbose) {
@@ -184,7 +193,8 @@ int main(int argc, char *argv[]) {
         std::cout << "Separator used: " << args::separator << '\n';
     }
     
-    ResultFile rf(args::filename);
+    rf.set_filename(args::filename);
+    rf.start();
 
     rf << "Generation" << args::separator;
 
@@ -197,7 +207,7 @@ int main(int argc, char *argv[]) {
     // line of descent, added recursively at the end
     rf << "LOD Rock" << args::separator << "LOD Paper" << args::separator << "LOD Scissor\n";
 
-    Population population(args::population_size, args::opponents, 3);
+    population = Population(args::population_size, args::opponents, 3);
 
     auto t1 = std::chrono::high_resolution_clock::now();
     simulate_generations(population, args::generations, rf);
@@ -215,5 +225,5 @@ int main(int argc, char *argv[]) {
     << setw(3) << elapsed % 1000 << '\n';
     
     rf.change_file();
-    print_ancestors(population[0], rf);
+    print_ancestors(*population[0], rf);
 }

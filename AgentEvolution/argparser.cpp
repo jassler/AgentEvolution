@@ -14,10 +14,10 @@ namespace args {
     
     // default options, may be overwritten by command line arguments
     unsigned int population_size = 1000;
-    unsigned int opponents = 999; // TODO: opponents isn't used yet
-    unsigned int generations = 500;
+    unsigned int opponents = 500;
+    unsigned int generations = 1000;
+    unsigned int winners = population_size / 10;
     std::vector<double> mutation_probs = { 0.01, 0.01, 0.01 };
-    
     std::string filename = "result.csv";
 
     std::string separator = ";";
@@ -37,6 +37,7 @@ namespace args {
                 ("a,agents", "number of agents for each generation", cxxopts::value<unsigned int>(population_size))
                 ("o,opponents", "number of opponents each agent plays against", cxxopts::value<unsigned int>(opponents))
                 ("g,generations", "number of generations to simulate", cxxopts::value<unsigned int>(generations))
+                ("w,winners", "number of agents that are allowed to make offsprings after each generation", cxxopts::value<unsigned int>(winners))
                 ("p,probabilities", "probability for each genome to mutate seperated by commas (eg. 0.01,0.01,0.02)", cxxopts::value<std::string>(probs_str))
                 ("f,file", "file to store results in", cxxopts::value<std::string>(filename))
                 ("s,separator", "character or string that separates values in csv-file", cxxopts::value<std::string>(separator))

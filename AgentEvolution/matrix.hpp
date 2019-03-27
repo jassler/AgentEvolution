@@ -28,8 +28,9 @@ public:
     Matrix(const Matrix& matrix);
     ~Matrix();
     
-    const size_t width() const;
-    const size_t height() const;
+    size_t width() const;
+    size_t height() const;
+    size_t size() const;
     
     Matrix& operator=(const Matrix& a);
     bool operator==(const Matrix& a) const;
