@@ -22,6 +22,9 @@ namespace args {
 
     std::string separator = ";";
 
+    std::string out_start = "\r";
+    std::string out_end = "%";
+
 
     void parse(int argc, char* argv[]) {
 
@@ -42,6 +45,8 @@ namespace args {
                 ("f,file", "file to store results in", cxxopts::value<std::string>(filename))
                 ("s,separator", "character or string that separates values in csv-file", cxxopts::value<std::string>(separator))
                 ("v,verbose", "log output messages", cxxopts::value<bool>(verbose))
+                ("outstart", "string that output starts with (default \\r)", cxxopts::value<std::string>(out_start))
+                ("outend", "string that output ends with (default %)", cxxopts::value<std::string>(out_end))
                 ("h,help", "view command line options");
             
             auto result = options.parse(argc, argv);

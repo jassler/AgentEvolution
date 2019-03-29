@@ -1,5 +1,5 @@
 CC = g++
-INC = -Iinc
+INC = -I../AgentEvolution
 CFLAGS = -std=c++17 -O3
 TESTFLAGS = -lgtest -lpthread
 

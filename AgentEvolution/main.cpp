@@ -43,7 +43,7 @@ public:
         if(in_file.is_open())
             in_file.close();
         
-        // remove(tmpfile.c_str());
+        remove(tmpfile.c_str());
         M_PRINTF("Deleted temporary file %s", tmpfile.c_str());
     }
     
@@ -153,7 +153,7 @@ void simulate_generations(Population& population, const int& generations, Result
         // print % done
         if(prev_perc != i * 100 / generations) {
             prev_perc = i * 100 / generations;
-            std::cout << '\r' << prev_perc << '%' << std::flush;
+            std::cout << args::out_start << prev_perc << args::out_end << std::flush;
         }
         
         // no need to evaluate last generation (otherwise we receive one "ancestor" too many)

@@ -27,6 +27,9 @@ namespace args {
     extern std::string filename;
     extern std::string separator;
 
+    extern std::string out_start;
+    extern std::string out_end;
+
     /*
     * Parse command line arguments with cxxopts-library
     * https://github.com/jarro2783/cxxopts

@@ -11,6 +11,7 @@
 
 #include "agent.hpp"
 #include "matrix.hpp"
+#include <initializer_list>
 #include <vector>
 #include <random>
 
@@ -48,9 +49,11 @@ template<class ..._Args>
 Population::Population(unsigned int population_size, unsigned int opp_amount, _Args&& ...__args) : opp_amount(opp_amount), dist_population(0, population_size - 1) {
     this->population_size = population_size;
     
+    std::vector<double> v{ 1, 0, 0 };
     // create all agents
     for(unsigned int i = 0; i < population_size; ++i) {
-        std::shared_ptr<Agent> a = std::make_shared<Agent>(__args...);
+        // std::shared_ptr<Agent> a = std::make_shared<Agent>(__args...);
+        std::shared_ptr<Agent> a = std::make_shared<Agent>(v);
         agents.push_back(a);
     }
 }

@@ -70,7 +70,7 @@ std::shared_ptr<Agent> Agent::make_offspring() const {
     
     for(int i = 0; i < mutation.size(); ++i) {
         if(rw::from_unit_interval() < args::mutation_probs[i]) {
-             mutation[i] = rw::from_unit_interval();
+            mutation[i] = rw::from_unit_interval();
         }
     }
 

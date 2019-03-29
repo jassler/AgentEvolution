@@ -1,4 +1,4 @@
-#include "../AgentEvolution/matrix.hpp"
+#include "matrix.hpp"
 #include "gtest/gtest.h"
 
 TEST(MatrixTest, InitializationDefault) {
