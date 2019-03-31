@@ -12,11 +12,13 @@ TEST(AgentTest, Initialization) {
 
     EXPECT_EQ(0, a.get_score());
     EXPECT_EQ(3, a.get_genome().size());
+    EXPECT_EQ(3, a.get_phenotype().size());
     EXPECT_EQ(nullptr, a.get_ancestor());
 
     std::shared_ptr<Agent> parent = std::make_shared<Agent>(1);
     EXPECT_EQ(1, (*parent)[0]);
     EXPECT_EQ(1, parent->get_genome().size());
+    EXPECT_EQ(1, parent->get_phenotype().size());
 
     std::shared_ptr<Agent> child = parent->make_offspring();
     EXPECT_EQ(parent, child->get_ancestor());
