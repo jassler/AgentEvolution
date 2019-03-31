@@ -72,7 +72,7 @@ void Population::evaluate(size_t winner_amount) {
     while(winners.size() < winner_amount) {
         
         // choose random agent that hasn't appeared in winners yet
-        int potential_winner = rw::rand_int(0, (int) (population_size - 1 - winners.size()));
+        int potential_winner = rw::rand_int(0, static_cast<int>(population_size - 1 - winners.size()));
 //        do {
 //            potential_winner = rw::rand_int(dist_population);
 //        } while(std::find(winners.begin(), winners.end(), potential_winner) != winners.end());

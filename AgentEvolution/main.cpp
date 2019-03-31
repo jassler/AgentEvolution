@@ -78,12 +78,12 @@ public:
         return true;
     }
     
-    void set_filename(const std::string& filename) {
+    void set_filename(const std::string& name) {
         if(phase != WRITE_PREP)
             return;
         
-        this->tmpfile = filename + ".tmp";
-        this->filename = filename;
+        this->tmpfile = name + ".tmp";
+        this->filename = name;
         
         M_PRINTF("Temporary filename: %s", tmpfile.c_str());
     }
@@ -105,41 +105,41 @@ ResultFile rf("result.csv");
 
 
 // work up ancestor tree of child node recursively, append genome to every row of infile
-int print_ancestors(const Agent& a, ResultFile& rf) {
+int print_ancestors(const Agent& a, ResultFile& file) {
     std::string str;
     
     int index;
     if(a.get_ancestor() == nullptr) {
         // header row of csv-file
-        rf >> str;
-        rf << str << '\n';
+        file >> str;
+        file << str << '\n';
         index = 0;
     } else {
-        index = print_ancestors(*a.get_ancestor(), rf);
+        index = print_ancestors(*a.get_ancestor(), file);
     }
     
-    rf >> str;
-    rf << str;
+    file >> str;
+    file << str;
     
     auto genome = a.get_genome();
     
     for(auto it = genome.begin(); it != genome.end(); ++it) {
-        rf << args::separator << *it;
+        file << args::separator << *it;
     }
-    rf << '\n';
+    file << '\n';
     
     return index + 1;
 }
 
 
-void simulate_generations(Population& population, const int& generations, ResultFile& file) {
+void simulate_generations(Population& pop, const int& generations, ResultFile& file) {
 
     int prev_perc = -1;
     for(int i = 0; i <= generations; ++i) {
-        population.play_games();
+        pop.play_games();
 
-        auto avg = population.get_avg_strategy();
-        auto best = population.get_best_strategy();
+        auto avg = pop.get_avg_strategy();
+        auto best = pop.get_best_strategy();
 
         file << i;
         for(const auto& a : avg) {
@@ -158,7 +158,7 @@ void simulate_generations(Population& population, const int& generations, Result
         
         // no need to evaluate last generation (otherwise we receive one "ancestor" too many)
         if(i < generations) {
-            population.evaluate(args::winners);
+            pop.evaluate(args::winners);
         }
     }
 

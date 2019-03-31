@@ -36,7 +36,7 @@ Agent::Agent(const std::vector<double>& gen)
 
 Agent::Agent(const std::vector<double>& genome, const Matrix& matrix, std::shared_ptr<const Agent> ancestor)
 : genome(genome), matrix(matrix), phenotype(matrix * genome), phenotype_added(std::vector<double>(genome.size()))
-, ancestor(ancestor), dist_index(0, (int) matrix.height() - 1) {
+, ancestor(ancestor), dist_index(0, static_cast<int>(matrix.height() - 1)) {
     
     normalize();
 }
@@ -107,7 +107,7 @@ int Agent::get_score() const {
 }
 
 double Agent::avg_score() const {
-    return (double) score / games_played;
+    return static_cast<double>(score) / games_played;
 }
 
 unsigned long Agent::size() const {
