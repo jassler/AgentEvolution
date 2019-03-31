@@ -3,3 +3,4 @@ bin/
 .idea/
 *.csv
 *.tmp
+.DS_Store
