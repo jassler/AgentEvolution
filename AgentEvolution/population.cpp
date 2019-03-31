@@ -30,7 +30,7 @@ void Population::play_games() {
     
     // every player playes n games
     for(auto& it_agent : agents) {
-        for(int i = 0; i < opp_amount; ++i) {
+        for(size_t i = 0; i < opp_amount; ++i) {
             ++it_opp;
             if(it_opp == agents.end()) {
                 // loop back to first player
@@ -49,7 +49,7 @@ void Population::play_games() {
 
 // roulette selection, mutate remaining agents
 // winner_amount must be in range [1, population_size]
-void Population::evaluate(unsigned int winner_amount) {
+void Population::evaluate(size_t winner_amount) {
     if(winner_amount < 1 || winner_amount > population_size)
         return;
     
@@ -112,7 +112,7 @@ std::vector<double> Population::get_avg_strategy() {
     // TODO accumulate
     while(++it != agents.end()) {
         auto it_gen = (*it)->get_genome();
-        for(int i = 0; i < result.size(); ++i) {
+        for(size_t i = 0; i < result.size(); ++i) {
             result[i] += it_gen[i];
         }
     }
@@ -122,6 +122,10 @@ std::vector<double> Population::get_avg_strategy() {
     return result;
 }
 
-unsigned int Population::size() {
+size_t Population::size() {
     return population_size;
+}
+
+std::shared_ptr<Agent> Population::operator[] (size_t i) {
+    return agents[i];
 }

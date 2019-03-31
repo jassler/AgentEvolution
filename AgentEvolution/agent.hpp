@@ -33,8 +33,8 @@ private:
     void normalize();
     
 public:
-    Agent(int amount);
-    Agent(int amount, const Matrix& matrix);
+    Agent(size_t amount);
+    Agent(size_t amount, const Matrix& matrix);
     
     Agent(const std::vector<double>& genome);
     Agent(const std::vector<double>& genome, const Matrix& matrix, std::shared_ptr<const Agent> ancestor);
@@ -58,7 +58,7 @@ public:
     std::vector<double> get_genome() const;
     unsigned long size() const;
     
-    double operator[] (int);
+    double operator[] (size_t index);
     bool operator< (const Agent& a) const;
     bool operator> (const Agent& a) const;
     

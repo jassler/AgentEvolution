@@ -25,10 +25,10 @@ std::vector<double> random_unit_numbers(size_t length) {
     return result;
 }
 
-Agent::Agent(int amount)
+Agent::Agent(size_t amount)
 : Agent::Agent(random_unit_numbers(amount)) {}
 
-Agent::Agent(int amount, const Matrix& matrix)
+Agent::Agent(size_t amount, const Matrix& matrix)
 : Agent::Agent(random_unit_numbers(amount), matrix, nullptr) {}
 
 Agent::Agent(const std::vector<double>& gen)
@@ -68,7 +68,7 @@ void Agent::normalize() {
 std::shared_ptr<Agent> Agent::make_offspring() const {
     std::vector<double> mutation = genome;
     
-    for(int i = 0; i < mutation.size(); ++i) {
+    for(size_t i = 0; i < mutation.size(); ++i) {
         if(rw::from_unit_interval() < args::mutation_probs[i]) {
             mutation[i] = rw::from_unit_interval();
         }
@@ -118,7 +118,7 @@ std::vector<double> Agent::get_genome() const {
     return genome;
 }
 
-double Agent::operator[] (int index) {
+double Agent::operator[] (size_t index) {
     return genome[index];
 }
 

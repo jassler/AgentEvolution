@@ -11,8 +11,8 @@
 
 Matrix::Matrix(size_t width, size_t height) : w(width), h(height) {
     m = new double[width * height];
-    for(int y = 0; y < height; ++y) {
-        for(int x = 0; x < width; ++x) {
+    for(size_t y = 0; y < height; ++y) {
+        for(size_t x = 0; x < width; ++x) {
             if(x == y)
                 m[y * width + x] = 1;
             else
@@ -42,7 +42,7 @@ Matrix::Matrix(const std::initializer_list<std::initializer_list<double>>& matri
 
 Matrix::Matrix(const Matrix& matrix) : w(matrix.w), h(matrix.h) {
     m = new double[w * h];
-    for(int i = 0; i < w * h; ++i) {
+    for(size_t i = 0; i < w * h; ++i) {
         m[i] = matrix.m[i];
     }
 }
@@ -70,11 +70,11 @@ Matrix operator*(const Matrix& a, const Matrix& b) {
     
     Matrix result(b.w, a.h);
     int count = 0;
-    for(int y = 0; y < a.h; ++y) {
-        for(int x = 0; x < b.w; ++x) {
+    for(size_t y = 0; y < a.h; ++y) {
+        for(size_t x = 0; x < b.w; ++x) {
             
             double sum = 0;
-            for(int i = 0; i < a.w; ++i) {
+            for(size_t i = 0; i < a.w; ++i) {
                 sum += a.m[y * a.w + i] * b.m[i * b.w + x];
             }
             result.m[count] = sum;
@@ -91,10 +91,10 @@ std::vector<double> operator*(const Matrix& a, const std::vector<double>& v) {
     }
     
     std::vector<double> result(v.size());
-    for(int y = 0; y < a.height(); ++y) {
+    for(size_t y = 0; y < a.height(); ++y) {
         
         double sum = 0;
-        for(int i = 0; i < a.width(); ++i) {
+        for(size_t i = 0; i < a.width(); ++i) {
             sum += v[i] * a[y][i];
         }
         
@@ -116,7 +116,7 @@ Matrix& Matrix::operator=(const Matrix& a) {
         h = a.h;
     }
     
-    for(int i = 0; i < w * h; ++i) {
+    for(size_t i = 0; i < w * h; ++i) {
         m[i] = a.m[i];
     }
     
@@ -127,14 +127,14 @@ bool Matrix::operator==(const Matrix& a) const {
     if(w != a.w || h != a.h)
         return false;
     
-    for(int i = 0; i < w * h; ++i) {
+    for(size_t i = 0; i < w * h; ++i) {
         if(m[i] != a.m[i])
             return false;
     }
     return true;
 }
 
-double* Matrix::operator[](const int& index) const {
+double* Matrix::operator[](const size_t& index) const {
     return &m[index * w];
 }
 
@@ -142,10 +142,10 @@ std::ostream& operator<<(std::ostream& os, const Matrix& m) {
     
     os << "{\n";
     
-    for(int y = 0; y < m.h; ++y) {
+    for(size_t y = 0; y < m.h; ++y) {
         os << "    { " << m.m[y * m.w];
 
-        for(int x = 1; x < m.w; ++x) {
+        for(size_t x = 1; x < m.w; ++x) {
             os << ", " << m.m[y * m.w + x];
         }
         if(y < m.h - 1)
