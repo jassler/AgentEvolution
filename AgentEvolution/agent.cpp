@@ -36,7 +36,7 @@ Agent::Agent(const std::vector<double>& gen)
 
 Agent::Agent(const std::vector<double>& genome, const Matrix& matrix, std::shared_ptr<const Agent> ancestor)
 : genome(genome), matrix(matrix), phenotype(matrix * genome), phenotype_added(std::vector<double>(genome.size()))
-, dist_index(0, (int) matrix.height() - 1), ancestor(ancestor) {
+, ancestor(ancestor), dist_index(0, (int) matrix.height() - 1) {
     
     normalize();
 }

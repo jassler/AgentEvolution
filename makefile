@@ -1,6 +1,7 @@
 CC = g++
 INC = -Iinc
-CFLAGS = -std=c++17 -O3
+CFLAGS = -std=c++17 -O3 -Wall
+# -Wextra -Wshadow -Wnon-virtual-dtor -Wold-style-cast -Wcast-align -Wunused -Woverloaded-virtual -Wpedantic -Wconversion -Wsign-conversion -Wmisleading-indentation -Wduplicated-cond -Wduplicated-branches -Wlogical-op -Wnull-dereference -Wuseless-cast -Wdouble-promotion -Wformat=2
 
 ODIR = bin
 OBJDIR = $(ODIR)/objs
@@ -18,7 +19,7 @@ $(OFILE): $(OBJS)
 # mostly gotten from here: https://stackoverflow.com/questions/1814270
 $(OBJDIR)/%.o: $(SDIR)/%.cpp
 	@mkdir -p $(@D)
-	$(CC) -c $(INC) -o $@ $< $(CFLAGS)
+	$(CC) -c $(INC) $(CFLAGS) -o $@ $<
 
 # according to GNU, 'make print' should display all cpp files that have changed.
 # not really working though (wrong directory?)
