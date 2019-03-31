@@ -27,6 +27,10 @@ namespace rw {
     int rand_int(std::uniform_int_distribution<> dist) {
         return dist(rng);
     }
+
+    size_t rand_int(std::uniform_int_distribution<size_t> dist) {
+        return dist(rng);
+    }
     
     int rand_int(int low, int high) {
         auto t = std::make_tuple(low, high);

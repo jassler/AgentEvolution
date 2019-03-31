@@ -121,9 +121,9 @@ int print_ancestors(const Agent& a, ResultFile& file) {
     file >> str;
     file << str;
     
-    auto genome = a.get_genome();
+    auto phenotype = a.get_phenotype();
     
-    for(auto it = genome.begin(); it != genome.end(); ++it) {
+    for(auto it = phenotype.begin(); it != phenotype.end(); ++it) {
         file << args::separator << *it;
     }
     file << '\n';
@@ -132,10 +132,11 @@ int print_ancestors(const Agent& a, ResultFile& file) {
 }
 
 
-void simulate_generations(Population& pop, const int& generations, ResultFile& file) {
+void simulate_generations(Population& pop, const size_t& generations, ResultFile& file) {
 
-    int prev_perc = -1;
-    for(int i = 0; i <= generations; ++i) {
+    std::cout << args::out_start << 0 << args::out_end << std::flush;
+    size_t prev_perc = 0;
+    for(size_t i = 0; i <= generations; ++i) {
         pop.play_games();
 
         auto avg = pop.get_avg_strategy();

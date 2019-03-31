@@ -64,21 +64,23 @@ void Population::evaluate(size_t winner_amount) {
     max += offset;
     
     // random number generator
-    std::uniform_int_distribution<> dist_threshold(0, max);
+    std::uniform_int_distribution<size_t> dist_threshold(0, static_cast<size_t>(max));
     
     /* choose winners */
-    std::vector<int> winners;
+    std::vector<size_t> winners;
     
     while(winners.size() < winner_amount) {
+        std::uniform_int_distribution<size_t> spin(0, population_size - 1 - winners.size());
         
         // choose random agent that hasn't appeared in winners yet
-        int potential_winner = rw::rand_int(0, static_cast<int>(population_size - 1 - winners.size()));
+        size_t potential_winner = rw::rand_int(spin);
+        // int potential_winner = rw::rand_int(0, static_cast<int>(population_size - 1 - winners.size()));
 //        do {
 //            potential_winner = rw::rand_int(dist_population);
 //        } while(std::find(winners.begin(), winners.end(), potential_winner) != winners.end());
         
-        int threshold = rw::rand_int(dist_threshold);
-        if(agents[potential_winner]->get_score() + offset > threshold) {
+        size_t threshold = rw::rand_int(dist_threshold);
+        if(static_cast<size_t>(agents[potential_winner]->get_score() + offset) > threshold) {
             winners.push_back(potential_winner);
             std::swap(agents[potential_winner], agents[population_size - 1 - winners.size()]);
         }
@@ -102,16 +104,16 @@ void Population::evaluate(size_t winner_amount) {
 std::vector<double> Population::get_best_strategy() {
     auto top = std::max_element(agents.begin(), agents.end(), [](auto a1, auto a2){ return a1 < a2; });
     
-    return (*top)->get_genome();
+    return (*top)->get_phenotype();
 }
 
 std::vector<double> Population::get_avg_strategy() {
     auto it = agents.begin();
-    auto result = (*it)->get_genome();
+    auto result = (*it)->get_phenotype();
     
     // TODO accumulate
     while(++it != agents.end()) {
-        auto it_gen = (*it)->get_genome();
+        auto it_gen = (*it)->get_phenotype();
         for(size_t i = 0; i < result.size(); ++i) {
             result[i] += it_gen[i];
         }

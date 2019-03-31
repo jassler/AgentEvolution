@@ -56,6 +56,7 @@ public:
     int get_score() const;
     double avg_score() const;
     std::vector<double> get_genome() const;
+    std::vector<double> get_phenotype() const;
     unsigned long size() const;
     
     double operator[] (size_t index);

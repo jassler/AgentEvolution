@@ -24,7 +24,7 @@ Matrix::Matrix(size_t width, size_t height) : w(width), h(height) {
 Matrix::Matrix(const std::initializer_list<std::initializer_list<double>>& matrix) : w(matrix.begin()->size()), h(matrix.size()) {
     m = new double[w * h];
     
-    int index = 0;
+    size_t index = 0;
 
     for(auto y : matrix) {
         if(y.size() != w) {

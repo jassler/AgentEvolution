@@ -21,7 +21,7 @@ private:
     size_t population_size;
     size_t opp_amount;
     
-    std::uniform_int_distribution<> dist_population;
+    std::uniform_int_distribution<size_t> dist_population;
     
 public:
     template<class ..._Args>

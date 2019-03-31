@@ -44,25 +44,26 @@ Agent::Agent(const std::vector<double>& genome, const Matrix& matrix, std::share
 // all elements of vector have to add up to 1
 void Agent::normalize() {
     
-    double sum = std::accumulate(genome.begin(), genome.end(), 0.0);
-    double offset = *std::min(genome.begin(), genome.end());
+    double sum = std::accumulate(phenotype.begin(), phenotype.end(), 0.0);
+    double offset = *std::min(phenotype.begin(), phenotype.end());
     if(offset < 0)
-        sum += -offset * genome.size();
+        sum += -offset * phenotype.size();
     else
         offset = 0;
     
     // if sum is zero, then all indeces must be zero (extremely unlikely, but who knows)
     // -> set random index to 1
     if(sum == 0) {
-        int index = rw::rand_int(dist_index);
-        genome[index] = 1;
-        sum = 1;
+        double value = phenotype.size() / sum;
+        for(auto& p : phenotype)
+            p = value;
+    } else {
+        // div every entry by sum
+        for(auto& p : phenotype)
+            p = (p - offset) / sum;
     }
     
-    // div every entry by sum
-    for(auto& g : genome)
-        g = (g - offset) / sum;
-    std::partial_sum(genome.begin(), genome.end(), phenotype_added.begin());
+    std::partial_sum(phenotype.begin(), phenotype.end(), phenotype_added.begin());
 }
 
 std::shared_ptr<Agent> Agent::make_offspring() const {
@@ -90,7 +91,7 @@ size_t Agent::play() {
     // eg. if phenotype_added = [0.4, 0.7, 1] and random number 0.9 -> choose index 2
     auto it = std::lower_bound(phenotype_added.begin(), phenotype_added.end(), r);
     
-    return std::distance(phenotype_added.begin(), it);
+    return static_cast<size_t>(std::distance(phenotype_added.begin(), it));
 }
 
 void Agent::play_result(int points) {
@@ -116,6 +117,10 @@ unsigned long Agent::size() const {
 
 std::vector<double> Agent::get_genome() const {
     return genome;
+}
+
+std::vector<double> Agent::get_phenotype() const {
+    return phenotype;
 }
 
 double Agent::operator[] (size_t index) {
