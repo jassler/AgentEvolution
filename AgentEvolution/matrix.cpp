@@ -138,6 +138,10 @@ double* Matrix::operator[](const size_t& index) const {
     return &m[index * w];
 }
 
+double* Matrix::operator[](const int& index) const {
+    return &m[static_cast<size_t>(index) * w];
+}
+
 std::ostream& operator<<(std::ostream& os, const Matrix& m) {
     
     os << "{\n";

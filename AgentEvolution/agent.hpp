@@ -49,6 +49,10 @@ public:
     
     // Returns a number from 0 to length of phenotype - 1
     size_t play();
+    
+    // Pretends that the random number random_result was generated
+    // Prerequisite: 0 <= random_result <= 1
+    size_t play(double random_result);
     // Adds points to score
     void play_result(int points);
     
@@ -59,7 +63,6 @@ public:
     std::vector<double> get_phenotype() const;
     unsigned long size() const;
     
-    double operator[] (size_t index);
     bool operator< (const Agent& a) const;
     bool operator> (const Agent& a) const;
     

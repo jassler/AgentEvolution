@@ -35,6 +35,7 @@ public:
     Matrix& operator=(const Matrix& a);
     bool operator==(const Matrix& a) const;
     double* operator[](const size_t& index) const;
+    double* operator[](const int& index) const;
     
     iterator begin();
     iterator end();

@@ -51,10 +51,13 @@ void Agent::normalize() {
     else
         offset = 0;
     
+    if(phenotype.size() == 8) {
+        std::cout << "\n\nHeeeeey! Got length 8! sum is " << sum << ", offset is " << offset << "\n\n";
+    }
     // if sum is zero, then all indeces must be zero (extremely unlikely, but who knows)
     // -> set random index to 1
     if(sum == 0) {
-        double value = phenotype.size() / sum;
+        double value = 1.0 / phenotype.size();
         for(auto& p : phenotype)
             p = value;
     } else {
@@ -84,13 +87,17 @@ std::shared_ptr<const Agent> Agent::get_ancestor() const {
 }
 
 size_t Agent::play() {
-    // random number from 0 - 1
-    double r = rw::from_unit_interval();
-    
+    return play(rw::from_unit_interval());
+}
+
+size_t Agent::play(double random_result) {
+    std::cout << "Phenotype is";
+    for(const auto& p : phenotype_added)
+        std::cout << ", " << p;
     // find index in phenotype to determine play
     // eg. if phenotype_added = [0.4, 0.7, 1] and random number 0.9 -> choose index 2
-    auto it = std::lower_bound(phenotype_added.begin(), phenotype_added.end(), r);
-    
+    auto it = std::lower_bound(phenotype_added.begin(), phenotype_added.end(), random_result);
+    std::cout << " | got index " << static_cast<size_t>(std::distance(phenotype_added.begin(), it)) << " with number " << random_result << "\n";
     return static_cast<size_t>(std::distance(phenotype_added.begin(), it));
 }
 
@@ -123,16 +130,12 @@ std::vector<double> Agent::get_phenotype() const {
     return phenotype;
 }
 
-double Agent::operator[] (size_t index) {
-    return genome[index];
-}
-
 bool Agent::operator< (const Agent& a) const {
-    return avg_score() < a.avg_score();
+    return score < a.score;
 }
 
 bool Agent::operator> (const Agent& a) const {
-    return avg_score() > a.avg_score();
+    return score > a.score;
 }
 
 

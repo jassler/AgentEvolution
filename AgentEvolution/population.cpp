@@ -101,27 +101,47 @@ void Population::evaluate(size_t winner_amount) {
     agents = next_generation;
 }
 
-std::vector<double> Population::get_best_strategy() {
-    auto top = std::max_element(agents.begin(), agents.end(), [](auto a1, auto a2){ return a1 < a2; });
-    
-    return (*top)->get_phenotype();
+std::shared_ptr<Agent> Population::get_best_agent() {
+    auto top = std::max_element(agents.begin(), agents.end(), [](auto a1, auto a2){ return *a1 < *a2; });
+    return *top;
 }
 
-std::vector<double> Population::get_avg_strategy() {
+std::vector<double> Population::get_avg_phenotype() {
     auto it = agents.begin();
-    auto result = (*it)->get_phenotype();
-    
-    // TODO accumulate
+    auto avg = (*it)->get_phenotype();
+    std::vector<double> t(avg.size());
+
     while(++it != agents.end()) {
-        auto it_gen = (*it)->get_phenotype();
-        for(size_t i = 0; i < result.size(); ++i) {
-            result[i] += it_gen[i];
+        t = (*it)->get_phenotype();
+        for(size_t i = 0; i < avg.size(); ++i) {
+            avg[i] += t[i];
         }
     }
-    
-    std::transform(result.begin(), result.end(), result.begin(), [this](auto& item){return item / population_size; });
-    
-    return result;
+
+    for(auto& v : avg) {
+        v /= agents.size();
+    }
+
+    return avg;
+}
+
+std::vector<double> Population::get_avg_genome() {
+    auto it = agents.begin();
+    auto avg = (*it)->get_genome();
+    std::vector<double> t(avg.size());
+
+    while(++it != agents.end()) {
+        t = (*it)->get_genome();
+        for(size_t i = 0; i < avg.size(); ++i) {
+            avg[i] += t[i];
+        }
+    }
+
+    for(auto& v : avg) {
+        v /= agents.size();
+    }
+
+    return avg;
 }
 
 size_t Population::size() {

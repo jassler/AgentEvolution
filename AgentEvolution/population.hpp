@@ -33,8 +33,9 @@ public:
     // winner_amount must be in range [1, population_size]
     void evaluate(size_t winner_amount);
     
-    std::vector<double> get_best_strategy();
-    std::vector<double> get_avg_strategy();
+    std::shared_ptr<Agent> get_best_agent();
+    std::vector<double> get_avg_genome();
+    std::vector<double> get_avg_phenotype();
     
     size_t size();
     

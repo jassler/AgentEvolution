@@ -21,6 +21,8 @@
 
 #include <csignal>
 
+#define WRITE_VEC(vec) for(const auto& v : vec) { file << args::separator << v; }
+
 class ResultFile {
 private:
     std::string filename, tmpfile;
@@ -103,7 +105,6 @@ public:
 Population population(0, 0, 0);
 ResultFile rf("result.csv");
 
-
 // work up ancestor tree of child node recursively, append genome to every row of infile
 int print_ancestors(const Agent& a, ResultFile& file) {
     std::string str;
@@ -120,17 +121,13 @@ int print_ancestors(const Agent& a, ResultFile& file) {
     
     file >> str;
     file << str;
-    
-    auto phenotype = a.get_phenotype();
-    
-    for(auto it = phenotype.begin(); it != phenotype.end(); ++it) {
-        file << args::separator << *it;
-    }
+
+    WRITE_VEC(a.get_genome());
+    WRITE_VEC(a.get_phenotype());
     file << '\n';
     
     return index + 1;
 }
-
 
 void simulate_generations(Population& pop, const size_t& generations, ResultFile& file) {
 
@@ -138,17 +135,13 @@ void simulate_generations(Population& pop, const size_t& generations, ResultFile
     size_t prev_perc = 0;
     for(size_t i = 0; i <= generations; ++i) {
         pop.play_games();
-
-        auto avg = pop.get_avg_strategy();
-        auto best = pop.get_best_strategy();
-
         file << i;
-        for(const auto& a : avg) {
-            file << args::separator << a;
-        }
-        for(const auto& b : best) {
-            file << args::separator << b;
-        }
+        WRITE_VEC(pop.get_avg_genome());
+        WRITE_VEC(pop.get_avg_phenotype());
+
+        auto best = pop.get_best_agent();
+        WRITE_VEC(best->get_genome());
+        WRITE_VEC(best->get_phenotype());
         file << '\n';
         
         // print % done
@@ -170,7 +163,12 @@ void signalHandler( int signum ) {
     if(signum == SIGINT || signum == SIGABRT) {
         if(rf.change_file()) {
             print_ancestors(*population[0], rf);
+            rf << "\nThis file may have been corrupted";
+            exit(2);
         }
+    } else {
+        rf.~ResultFile();
+        exit(3);
     }
 }
 
@@ -200,13 +198,16 @@ int main(int argc, char *argv[]) {
     rf << "Generation" << args::separator;
 
     // average for whole generation
-    rf << "Avg Rock" << args::separator << "Avg Paper" << args::separator << "Avg Scissor" << args::separator;
+    rf << "Avg Rock Genome" << args::separator << "Avg Paper Genome" << args::separator << "Avg Scissor Genome" << args::separator;
+    rf << "Avg Rock Phenotype" << args::separator << "Avg Paper Phenotype" << args::separator << "Avg Scissor Phenotype" << args::separator;
 
     // strategy of agent who's won the most games
-    rf << "Best Rock" << args::separator << "Best Paper" << args::separator << "Best Scissor" << args::separator;
+    rf << "Best Rock Genome" << args::separator << "Best Paper Genome" << args::separator << "Best Scissor Genome" << args::separator;
+    rf << "Best Rock Phenotype" << args::separator << "Best Paper Phenotype" << args::separator << "Best Scissor Phenotype" << args::separator;
 
     // line of descent, added recursively at the end
-    rf << "LOD Rock" << args::separator << "LOD Paper" << args::separator << "LOD Scissor\n";
+    rf << "LOD Rock Genome" << args::separator << "LOD Paper Genome" << args::separator << "LOD Scissor Genome" << args::separator;
+    rf << "LOD Rock Phenotype" << args::separator << "LOD Paper Phenotype" << args::separator << "LOD Scissor Phenotype\n";
 
     population = Population(args::population_size, args::opponents, 3);
 
@@ -218,12 +219,11 @@ int main(int argc, char *argv[]) {
     
     std::cout << "\rDone\n";
     
-    using std::setw;
     std::cout << "Time elapsed: " << std::setfill('0')
-    << setw(2) << elapsed / 1000 / 60 / 60 << ':'
-    << setw(2) << (elapsed / 1000 / 60) % 60 << ':'
-    << setw(2) << (elapsed / 1000) % 60 << '.'
-    << setw(3) << elapsed % 1000 << '\n';
+    << std::setw(2) << elapsed / 1000 / 60 / 60 << ':'
+    << std::setw(2) << elapsed / 1000 / 60 % 60 << ':'
+    << std::setw(2) << elapsed / 1000 % 60 << '.'
+    << std::setw(3) << elapsed % 1000 << '\n';
     
     rf.change_file();
     print_ancestors(*population[0], rf);
