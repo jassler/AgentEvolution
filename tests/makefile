@@ -8,7 +8,7 @@ OBJDIR = $(ODIR)/objs
 OFILE = $(ODIR)/agentevolver_test
 SDIR = ../AgentEvolution
 
-_TESTOBJ = test.o test_matrix.o test_agent.o
+_TESTOBJ = test.o test_matrix.o test_agent.o test_population.o
 _SRCOBJ = agent.o matrix.o population.o randwrap.o argparser.o
 _OBJS = $(_SRCOBJ) $(_TESTOBJ)
 OBJS = $(patsubst %,$(OBJDIR)/%,$(_OBJS))
