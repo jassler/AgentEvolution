@@ -68,7 +68,13 @@ TEST(AgentTest, Play) {
     EXPECT_EQ(2, a.play(0.999));
     EXPECT_EQ(2, a.play(1));
 
-    Agent b({0.125, 0.125, 0.125, 0125, 0.125, 0.125, 0.125, 0.125});
+    std::cout << "\n\n\nStarting agent\nMy vector is: ";
+    std::vector<double> vec = {0.125, 0.125, 0.125, 0125, 0.125, 0.125, 0.125, 0.125};
+    vec[3] = 0.125;
+    for(const auto& v : vec)
+        std::cout << v << " ";
+    std::cout << "\n";
+    Agent b(vec);
     EXPECT_EQ(0, b.play(0));
     EXPECT_EQ(0, b.play(0.125));
     EXPECT_EQ(1, b.play(0.125001));
