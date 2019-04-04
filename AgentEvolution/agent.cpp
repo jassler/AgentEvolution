@@ -37,7 +37,7 @@ Agent::Agent(const std::vector<double>& gen)
 Agent::Agent(const std::vector<double>& genome, const Matrix& matrix, std::shared_ptr<const Agent> ancestor)
 : genome(genome), matrix(matrix), phenotype(matrix * genome), phenotype_added(std::vector<double>(genome.size()))
 , ancestor(ancestor), dist_index(0, static_cast<int>(matrix.height() - 1)) {
-    
+
     normalize();
 }
 
@@ -51,9 +51,6 @@ void Agent::normalize() {
     else
         offset = 0;
     
-    if(phenotype.size() == 8) {
-        std::cout << "\n\nHeeeeey! Got length 8! sum is " << sum << ", offset is " << offset << "\n\n";
-    }
     // if sum is zero, then all indeces must be zero (extremely unlikely, but who knows)
     // -> set random index to 1
     if(sum == 0) {
@@ -91,13 +88,10 @@ size_t Agent::play() {
 }
 
 size_t Agent::play(double random_result) {
-    std::cout << "Phenotype is";
-    for(const auto& p : phenotype_added)
-        std::cout << ", " << p;
     // find index in phenotype to determine play
     // eg. if phenotype_added = [0.4, 0.7, 1] and random number 0.9 -> choose index 2
     auto it = std::lower_bound(phenotype_added.begin(), phenotype_added.end(), random_result);
-    std::cout << " | got index " << static_cast<size_t>(std::distance(phenotype_added.begin(), it)) << " with number " << random_result << "\n";
+
     return static_cast<size_t>(std::distance(phenotype_added.begin(), it));
 }
 
