@@ -21,11 +21,13 @@ private:
     size_t population_size;
     size_t opp_amount;
     
+    Matrix payoff_matrix;
+    
     std::uniform_int_distribution<size_t> dist_population;
     
 public:
     template<class ..._Args>
-    Population(size_t population_size, size_t opp_amount, _Args&& ...__args);
+    Population(const size_t population_size, const size_t opp_amount, const Matrix& payoff_matrix, _Args&& ...__args);
     
     void play_games();
     
@@ -45,7 +47,7 @@ public:
 // template constructor must stay in header
 // _args is passed to Agent constructor
 template<class ..._Args>
-Population::Population(size_t population_size, size_t opp_amount, _Args&& ...__args) : opp_amount(opp_amount), dist_population(0, population_size - 1) {
+Population::Population(const size_t population_size, const size_t opp_amount, const Matrix& payoff_matrix, _Args&& ...__args) : opp_amount(opp_amount), payoff_matrix(payoff_matrix), dist_population(0, population_size - 1) {
     this->population_size = population_size;
     
     // create all agents

@@ -29,10 +29,10 @@ Agent::Agent(size_t amount)
 : Agent::Agent(random_unit_numbers(amount)) {}
 
 Agent::Agent(size_t amount, const Matrix& matrix)
-: Agent::Agent(random_unit_numbers(amount), matrix, nullptr) {}
+: Agent::Agent(random_unit_numbers(amount), matrix) {}
 
 Agent::Agent(const std::vector<double>& gen)
-: Agent::Agent(gen, Matrix(gen.size(), gen.size()), nullptr) {}
+: Agent::Agent(gen, Matrix(gen.size(), gen.size())) {}
 
 Agent::Agent(const std::vector<double>& genome, const Matrix& matrix, std::shared_ptr<const Agent> ancestor)
 : genome(genome), matrix(matrix), phenotype(matrix * genome), phenotype_added(std::vector<double>(genome.size()))
@@ -95,7 +95,7 @@ size_t Agent::play(double random_result) {
     return static_cast<size_t>(std::distance(phenotype_added.begin(), it));
 }
 
-void Agent::play_result(int points) {
+void Agent::play_result(double points) {
     this->score += points;
     this->games_played += 1;
 }
@@ -104,7 +104,7 @@ void Agent::reset_score() {
     score = 0;
 }
 
-int Agent::get_score() const {
+double Agent::get_score() const {
     return score;
 }
 

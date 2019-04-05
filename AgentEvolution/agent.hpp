@@ -23,7 +23,7 @@ private:
     std::vector<double> phenotype_added;
     
     int games_played = 0;
-    int score = 0;
+    double score = 0;
     
     std::shared_ptr<const Agent> ancestor;
     
@@ -37,12 +37,7 @@ public:
     Agent(size_t amount, const Matrix& matrix);
     
     Agent(const std::vector<double>& genome);
-    Agent(const std::vector<double>& genome, const Matrix& matrix, std::shared_ptr<const Agent> ancestor);
-    
-//    ~Agent() {
-//        if(--AgentInfo::count % 1000 == 0)
-//            std::cout << AgentInfo::count << " Agents\n";
-//    }
+    Agent(const std::vector<double>& genome, const Matrix& matrix, std::shared_ptr<const Agent> ancestor = nullptr);
     
     std::shared_ptr<Agent> make_offspring() const;
     std::shared_ptr<const Agent> get_ancestor() const;
@@ -54,10 +49,10 @@ public:
     // Prerequisite: 0 <= random_result <= 1
     size_t play(double random_result);
     // Adds points to score
-    void play_result(int points);
+    void play_result(double points);
     
     void reset_score();
-    int get_score() const;
+    double get_score() const;
     double avg_score() const;
     std::vector<double> get_genome() const;
     std::vector<double> get_phenotype() const;

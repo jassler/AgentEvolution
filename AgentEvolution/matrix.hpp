@@ -12,6 +12,7 @@
 #include <ostream>
 #include <vector>
 #include <initializer_list>
+#include <sstream>
 
 class Matrix {
 private:
@@ -25,6 +26,10 @@ public:
 
     Matrix(size_t width, size_t height);
     Matrix(const std::initializer_list<std::initializer_list<double>>& matrix);
+    
+    template<typename Container>
+    Matrix(const Container& matrix);
+    
     Matrix(const Matrix& matrix);
     ~Matrix();
     
@@ -46,5 +51,25 @@ public:
     friend Matrix operator*(const Matrix& a, const Matrix& b);
     friend std::vector<double> operator*(const Matrix& a, const std::vector<double>& v);
 };
+
+template<typename Container>
+Matrix::Matrix(const Container& matrix) : w(matrix.begin()->size()), h(matrix.size()) {
+    m = new double[w * h];
+    
+    size_t index = 0;
+    
+    for(auto y : matrix) {
+        if(y.size() != w) {
+            std::stringstream ss;
+            ss << "Expected matrix width to be " << w << ", instead got " << y.size() << " in row " << index / w;
+            throw ss.str();
+        }
+        
+        for(auto x : y) {
+            m[index] = x;
+            index++;
+        }
+    }
+}
 
 #endif /* matrix_hpp */

@@ -12,17 +12,6 @@
 #include <utility>
 
 void Population::play_games() {
-    //    R   P   S
-    // R  0  -1   1
-    // P  1   0  -1
-    // S -1   1   0
-    // eg. at [2][1] -> Scissor beats Paper -> 1
-    int payoff_matrix[3][3] = {
-        {  0, -1,  1 },
-        {  1,  0, -1 },
-        { -1,  1,  0 }
-    };
-    
     std::shuffle(agents.begin(), agents.end(), rw::get_mt());
     
     // opponents agent play against
@@ -39,10 +28,9 @@ void Population::play_games() {
             
             size_t p1 = it_agent->play();
             size_t p2 = (*it_opp)->play();
-            int res = payoff_matrix[p1][p2];
             
-            it_agent->play_result(res);
-            (*it_opp)->play_result(-res);
+            it_agent->play_result(payoff_matrix[p1][p2]);
+            (*it_opp)->play_result(payoff_matrix[p2][p1]);
         }
     }
 }
@@ -55,8 +43,8 @@ void Population::evaluate(size_t winner_amount) {
     
     /* worst score (offset) to be added to every score so we don't have to deal with negative scores */
     auto minmax = std::minmax_element(agents.begin(), agents.end(), [](auto a1, auto a2){ return a1->get_score() < a2->get_score(); });
-    int offset = (*minmax.first)->get_score();
-    int max = (*minmax.second)->get_score();
+    double offset = (*minmax.first)->get_score();
+    double max = (*minmax.second)->get_score();
     
     // worst score has to be at least 1
     offset = -offset + 1;
@@ -64,7 +52,7 @@ void Population::evaluate(size_t winner_amount) {
     max += offset;
     
     // random number generator
-    std::uniform_int_distribution<size_t> dist_threshold(0, static_cast<size_t>(max));
+    std::uniform_int_distribution<size_t> dist_threshold(0, static_cast<size_t>(max + 1));
     
     /* choose winners */
     std::vector<size_t> winners;

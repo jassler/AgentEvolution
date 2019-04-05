@@ -102,7 +102,7 @@ public:
 };
 
 // global population and ResultFile so we can save the file in case execution gets aborted
-Population population(0, 0, 0);
+Population population(0, 0, Matrix(0, 0), 0);
 ResultFile rf("result.csv");
 
 // work up ancestor tree of child node recursively, append genome to every row of infile
@@ -182,12 +182,21 @@ int main(int argc, char *argv[]) {
         printf("%5d agents per generation\n", args::population_size);
         printf("%5d opponents each player takes on\n", args::opponents);
         printf("%5d generations being simulated\n", args::generations);
+        
+#define PRINT_VEC(vec) {auto it = vec.begin(); std::cout << *it; while(++it != vec.end()) std::cout << ", " << *it; std::cout << '\n';}
+        if(args::genome.size() == 0)
+            std::cout << "Genomes will be generated at random";
+        else
+            PRINT_VEC(args::genome);
+        
+        std::cout << "Matrix to be used:\n" << args::matrix << '\n';
+        
         std::cout << "Mutation probabilities are: ";
-        auto it = args::mutation_probs.begin();
-        std::cout << *it;
-        while(++it != args::mutation_probs.end()) {
-            std::cout << ", " << *it;
-        }
+        PRINT_VEC(args::mutation_probs);
+#undef PRINT_VEC
+        
+        std::cout << "Payoff matrix:\n" << args::payoff_matrix << '\n';
+        
         std::cout << "\nSaving file to " << args::filename << '\n';
         std::cout << "Separator used: " << args::separator << '\n';
     }
@@ -208,8 +217,11 @@ int main(int argc, char *argv[]) {
     // line of descent, added recursively at the end
     rf << "LOD Rock Genome" << args::separator << "LOD Paper Genome" << args::separator << "LOD Scissor Genome" << args::separator;
     rf << "LOD Rock Phenotype" << args::separator << "LOD Paper Phenotype" << args::separator << "LOD Scissor Phenotype\n";
-
-    population = Population(args::population_size, args::opponents, 3);
+    
+    if(args::genome.empty())
+        population = Population(args::population_size, args::opponents, args::payoff_matrix, 3);
+    else
+        population = Population(args::population_size, args::opponents, args::payoff_matrix, args::genome, args::matrix);
 
     auto t1 = std::chrono::high_resolution_clock::now();
     simulate_generations(population, args::generations, rf);

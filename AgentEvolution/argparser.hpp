@@ -24,9 +24,10 @@
 #define DEF_MUT_PROB_STR "0.01,0.01,0.01"
 #define DEF_GENOME { }
 #define DEF_MATRIX { {1,0,0}, {0,1,0}, {0,0,1} }
-#define DEF_MATRIX_STR "1,0,0;0,1,0;0,0,1"
+#define DEF_MATRIX_STR "1,0,0/0,1,0/0,0,1"
 
 #define DEF_PAYOFF { {0,-1,1}, {1,0,-1}, {-1,1,0} }
+#define DEF_PAYOFF_STR "0,-1,1/1,0,-1/-1,1,0"
 
 #define DEF_FILENAME "results/csvs/result.csv"
 
@@ -48,7 +49,7 @@ namespace args {
     extern std::vector<double> mutation_probs;
     extern std::vector<double> genome;
     extern Matrix matrix;
-    extern Matrix payoffMatrix;
+    extern Matrix payoff_matrix;
     
     extern std::string filename;
     extern std::string separator;
@@ -61,14 +62,21 @@ namespace args {
     * https://github.com/jarro2783/cxxopts
     *
     * Currently accepted flags:
-    * --agents <num>       : population size
-    * --opponents <num>    : opponents each agents has to play against
-    * --generations <num>  : amount of generations to simulate
-    * --winners <num>      : amount of agents that allowed to make offsprings after each generation
-    * --probabilities <num>: probability for each genome to mutate
-    * --file <name>        : where to save the output file
-    * --verbose            : output info
-    * --help               : show list of accepted flags
+    * --agents <num>        : population size
+    * --opponents <num>     : opponents each agents has to play against
+    * --generations <num>   : amount of generations to simulate
+    * --winners <num>       : amount of agents that allowed to make offsprings after each generation
+    * --genomestart <list>  : default genome that every agent starts with. If empty, random
+    * --matrix <matrix>     : default matrix that every agent starts with. Default identity matrix
+    * --payoff <matrix>     : payoff matrix
+    * --probabilities <list>: probability for each genome to mutate
+    * --file <string>       : where to save the output file
+    * --separator <string>  : separator symbol to use in file
+    * --outstart <string>   : prefix for console progress output
+    * --outend <string>     : suffix for console progress output
+    * --interactive         : enter data in a series of questions
+    * --verbose             : output info
+    * --help                : show list of accepted flags
     */
     void parse(int argc, char* argv[]);
 
