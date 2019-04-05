@@ -8,7 +8,7 @@ OBJDIR = $(ODIR)/objs
 OFILE = $(ODIR)/agentevolver_test
 SDIR = ../AgentEvolution
 
-_TESTOBJ = test.o test_matrix.o test_agent.o test_population.o test_argparser.o
+_TESTOBJ = test.o test_argparser.o #test_matrix.o test_agent.o test_population.o
 _SRCOBJ = agent.o matrix.o population.o randwrap.o argparser.o
 _OBJS = $(_SRCOBJ) $(_TESTOBJ)
 OBJS = $(patsubst %,$(OBJDIR)/%,$(_OBJS))
@@ -21,11 +21,11 @@ $(OFILE): $(OBJS)
 # mostly gotten from here: https://stackoverflow.com/questions/1814270
 $(OBJDIR)/%.o: $(SDIR)/%.cpp
 	@mkdir -p $(@D)
-	$(CC) -c $(INC) -o $@ $< $(CFLAGS)
+	$(CC) $(CFLAGS) -c $(INC) -o $@ $<
 
 $(OBJDIR)/%.o: %.cpp
 	@mkdir -p $(@D)
-	$(CC) -c $(INC) -o $@ $< $(CFLAGS)
+	$(CC) $(CFLAGS) -c $(INC) -o $@ $<
 
 
 .PHONY: clean
