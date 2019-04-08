@@ -40,9 +40,6 @@ TEST(AgentTest, Normalizing) {
 
     expected = {-1, 0, 1};
     EXPECT_EQ(expected, a.get_genome());
-    // EXPECT_EQ(0, a[0]);
-    // EXPECT_EQ(1.0/3.0, a[1]);
-    // EXPECT_EQ(2.0/3.0, a[2]);
 
     a = Agent({-1, -1, -1, -1});
     expected = {.25, .25, .25, .25};
@@ -50,10 +47,6 @@ TEST(AgentTest, Normalizing) {
 
     expected = {-1, -1, -1, -1};
     EXPECT_EQ(expected, a.get_genome());
-    // EXPECT_EQ(0.25, a[0]);
-    // EXPECT_EQ(0.25, a[1]);
-    // EXPECT_EQ(0.25, a[2]);
-    // EXPECT_EQ(0.25, a[3]);
 }
 
 TEST(AgentTest, Play) {
@@ -68,12 +61,7 @@ TEST(AgentTest, Play) {
     EXPECT_EQ(2, a.play(0.999));
     EXPECT_EQ(2, a.play(1));
 
-    std::cout << "\n\n\nStarting agent\nMy vector is: ";
-    std::vector<double> vec = {0.125, 0.125, 0.125, 0125, 0.125, 0.125, 0.125, 0.125};
-    vec[3] = 0.125;
-    for(const auto& v : vec)
-        std::cout << v << " ";
-    std::cout << "\n";
+    std::vector<double> vec(8, 0.125);
     Agent b(vec);
     EXPECT_EQ(0, b.play(0));
     EXPECT_EQ(0, b.play(0.125));

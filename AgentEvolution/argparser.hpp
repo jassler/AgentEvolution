@@ -13,12 +13,13 @@
 #include "matrix.hpp"
 
 #define DEF_VERBOSE false
-#define DEF_MUTATE_MATRIX false
 
 #define DEF_POP_SIZE 1000
 #define DEF_OPP_SIZE 500
 #define DEF_WIN_SIZE 100
 #define DEF_GENERATIONS 1000
+
+#define DEF_MATRIX_MUTATION 0.0
 
 #define DEF_MUT_PROB { 0.01, 0.01, 0.01 }
 #define DEF_MUT_PROB_STR "0.01,0.01,0.01"
@@ -38,13 +39,14 @@
 namespace args {
 
     extern bool verbose;
-    extern bool mutate_matrix;
     
     // default options, may be overwritten by command line arguments
     extern unsigned int population_size;
     extern unsigned int opponents;
     extern unsigned int generations;
     extern unsigned int winners;
+
+    extern double matrix_mutation;
 
     extern std::vector<double> mutation_probs;
     extern std::vector<double> genome;
@@ -66,6 +68,7 @@ namespace args {
     * --opponents <num>     : opponents each agents has to play against
     * --generations <num>   : amount of generations to simulate
     * --winners <num>       : amount of agents that allowed to make offsprings after each generation
+    * --matrixmuation       : make matrix mutable
     * --genomestart <list>  : default genome that every agent starts with. If empty, random
     * --matrix <matrix>     : default matrix that every agent starts with. Default identity matrix
     * --payoff <matrix>     : payoff matrix

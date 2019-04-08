@@ -4,7 +4,7 @@
 #include "gtest/gtest.h"
 
 TEST(PopulationTest, Initialization) {
-    Population p(1000, 500, std::vector{0.5, 0.5});
+    Population p(999, 599, Matrix(1, 1), 1);
 
-    EXPECT_EQ(1000, p.size());
+    EXPECT_EQ(999, p.size());
 }

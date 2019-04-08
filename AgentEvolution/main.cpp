@@ -170,6 +170,8 @@ void signalHandler( int signum ) {
         rf.~ResultFile();
         exit(3);
     }
+
+    exit(4);
 }
 
 
