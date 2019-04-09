@@ -63,6 +63,18 @@
       </BuildableProductRunnable>
       <CommandLineArguments>
          <CommandLineArgument
+            argument = "-f /Users/felixfritz/Desktop/AgentEvolution/results/csvs/xcoderesult.csv"
+            isEnabled = "YES">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "-m 0.001"
+            isEnabled = "YES">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "-g 100"
+            isEnabled = "YES">
+         </CommandLineArgument>
+         <CommandLineArgument
             argument = "-v"
             isEnabled = "YES">
          </CommandLineArgument>

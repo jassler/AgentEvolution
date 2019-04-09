@@ -144,21 +144,21 @@ double* Matrix::operator[](const int& index) const {
 
 std::ostream& operator<<(std::ostream& os, const Matrix& m) {
     
-    os << "{\n";
+    os << "{";
     
     for(size_t y = 0; y < m.h; ++y) {
-        os << "    { " << m.m[y * m.w];
+        os << " { " << m.m[y * m.w];
 
         for(size_t x = 1; x < m.w; ++x) {
-            os << ", " << m.m[y * m.w + x];
+            os << "; " << m.m[y * m.w + x];
         }
         if(y < m.h - 1)
-            os << " },\n";
+            os << " };";
         else
-            os << " }\n";
+            os << " }";
     }
 
-    os << '}';
+    os << " }";
     
     return os;
 }

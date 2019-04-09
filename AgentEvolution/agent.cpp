@@ -68,14 +68,23 @@ void Agent::normalize() {
 
 std::shared_ptr<Agent> Agent::make_offspring() const {
     std::vector<double> mutation = genome;
+    Matrix m = matrix;
     
     for(size_t i = 0; i < mutation.size(); ++i) {
         if(rw::from_unit_interval() < args::mutation_probs[i]) {
-            mutation[i] = rw::from_unit_interval();
+            mutation[i] += rw::from_unit_interval() - 0.5;
+        }
+    }
+    
+    if(args::matrix_mutation > 0) {
+        for(auto& value : m) {
+            if(rw::from_unit_interval() < args::matrix_mutation) {
+                value += (rw::from_unit_interval() * 10) - 5;
+            }
         }
     }
 
-    std::shared_ptr<Agent> p = std::make_shared<Agent>(mutation, matrix, shared_from_this());
+    std::shared_ptr<Agent> p = std::make_shared<Agent>(mutation, m, shared_from_this());
     return p;
 }
 
@@ -122,6 +131,10 @@ std::vector<double> Agent::get_genome() const {
 
 std::vector<double> Agent::get_phenotype() const {
     return phenotype;
+}
+
+Matrix Agent::get_matrix() const {
+    return matrix;
 }
 
 bool Agent::operator< (const Agent& a) const {

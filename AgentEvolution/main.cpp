@@ -74,7 +74,7 @@ public:
         out_file.close();
         in_file.open(tmpfile);
         
-        M_PRINTF("Opening actual output file: %s", tmpfile.c_str());
+        M_PRINTF("Opening actual output file: %s", filename.c_str());
         out_file.open(filename);
         phase = WRITE_FILE;
         return true;
@@ -124,6 +124,7 @@ int print_ancestors(const Agent& a, ResultFile& file) {
 
     WRITE_VEC(a.get_genome());
     WRITE_VEC(a.get_phenotype());
+    file << args::separator << a.get_matrix();
     file << '\n';
     
     return index + 1;
@@ -191,13 +192,15 @@ int main(int argc, char *argv[]) {
         else
             PRINT_VEC(args::genome);
         
-        std::cout << "Matrix to be used:\n" << args::matrix << '\n';
+        std::cout << "Matrix to be used: " << args::matrix << '\n';
         
         std::cout << "Mutation probabilities are: ";
         PRINT_VEC(args::mutation_probs);
+        
+        std::cout << "Matrix mutation probability: " << args::matrix_mutation << "\n";
 #undef PRINT_VEC
         
-        std::cout << "Payoff matrix:\n" << args::payoff_matrix << '\n';
+        std::cout << "Payoff matrix: " << args::payoff_matrix << '\n';
         
         std::cout << "\nSaving file to " << args::filename << '\n';
         std::cout << "Separator used: " << args::separator << '\n';
@@ -218,7 +221,8 @@ int main(int argc, char *argv[]) {
 
     // line of descent, added recursively at the end
     rf << "LOD Rock Genome" << args::separator << "LOD Paper Genome" << args::separator << "LOD Scissor Genome" << args::separator;
-    rf << "LOD Rock Phenotype" << args::separator << "LOD Paper Phenotype" << args::separator << "LOD Scissor Phenotype\n";
+    rf << "LOD Rock Phenotype" << args::separator << "LOD Paper Phenotype" << args::separator << "LOD Scissor Phenotype" << args::separator;
+    rf << "LOD Matrix\n";
     
     if(args::genome.empty())
         population = Population(args::population_size, args::opponents, args::payoff_matrix, 3);

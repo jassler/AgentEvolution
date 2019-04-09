@@ -56,6 +56,8 @@ public:
     double avg_score() const;
     std::vector<double> get_genome() const;
     std::vector<double> get_phenotype() const;
+    Matrix get_matrix() const;
+    
     unsigned long size() const;
     
     bool operator< (const Agent& a) const;
