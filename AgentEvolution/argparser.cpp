@@ -132,6 +132,9 @@ namespace args {
                 PROMPT_INT("Number of winners that can reproduce after each generation", winners, DEF_WIN_SIZE);
                 PROMPT_DBL("Probability for an index in the matrix to change", matrix_mutation, DEF_MATRIX_MUTATION);
                 PROMPT_STR("Probability for each genome to mutate seperated by commas", probs_str, DEF_MUT_PROB_STR);
+                PROMPT_STR("Genome for every agent to start off", genome_str, xstr(DEF_GENOME));
+                PROMPT_STR("Matrix for every agent to start off", matrix_str, DEF_MATRIX_STR);
+                PROMPT_STR("Payoff matrix", payoff_str, DEF_PAYOFF_STR);
                 PROMPT_STR("File to save to", filename, DEF_FILENAME);
                 PROMPT_STR("csv separator", separator, DEF_SEP);
             }
