@@ -4,3 +4,4 @@ bin/
 *.csv
 *.tmp
 .DS_Store
+results/csvs/*
