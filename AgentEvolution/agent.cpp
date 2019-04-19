@@ -12,9 +12,10 @@
 #include <time.h>
 #include <algorithm>
 #include <cmath>
+#include <iostream>
 
 #include <sstream>
-// #include <boost/algorithm/string/join.hpp>
+#include <boost/algorithm/string/join.hpp>
 
 std::vector<double> random_unit_numbers(size_t length) {
     std::vector<double> result(length);
@@ -34,45 +35,71 @@ Agent::Agent(size_t amount, const Matrix& matrix)
 Agent::Agent(const std::vector<double>& gen)
 : Agent::Agent(gen, Matrix(gen.size(), gen.size())) {}
 
-Agent::Agent(const std::vector<double>& genome, const Matrix& matrix, std::shared_ptr<const Agent> ancestor)
+Agent::Agent(const std::vector<double>& genome, const Matrix& matrix, std::shared_ptr<Agent> ancestor)
 : genome(genome), matrix(matrix), phenotype(matrix * genome), phenotype_added(std::vector<double>(genome.size()))
 , ancestor(ancestor), dist_index(0, static_cast<int>(matrix.height() - 1)) {
 
     normalize();
 }
 
-// all elements of vector have to add up to 1
+// all elements of phenotype have to add up to 1
 void Agent::normalize() {
     
-    double sum = std::accumulate(phenotype.begin(), phenotype.end(), 0.0);
-    double offset = *std::min(phenotype.begin(), phenotype.end());
-    if(offset < 0)
-        sum += -offset * phenotype.size();
-    else
-        offset = 0;
+    // double sum = std::accumulate(phenotype.begin(), phenotype.end(), 0.0);
+    // double offset = -1 * (*std::min(phenotype.begin(), phenotype.end()));
+    // if(offset > 0)
+    //     sum += offset * phenotype.size();
+    // else
+    //     offset = 0;
+
     
-    // if sum is zero, then all indeces must be zero (extremely unlikely, but who knows)
-    // -> set random index to 1
-    if(sum == 0) {
-        double value = 1.0 / phenotype.size();
-        for(auto& p : phenotype)
-            p = value;
-    } else {
-        // div every entry by sum
-        for(auto& p : phenotype)
-            p = (p - offset) / sum;
+    
+    // // if sum is zero, then all indeces must be zero (extremely unlikely, but who knows)
+    // // -> set random index to 1
+    // if(sum == 0) {
+    //     double value = 1.0 / phenotype.size();
+    //     for(auto& p : phenotype)
+    //         p = value;
+    // } else {
+    //     // div every entry by sum
+    //     for(auto& p : phenotype)
+    //         p = (p + offset) / sum;
+    // }
+    
+    double min = 0;
+    for(double v : phenotype) {
+        if(v < min)
+            min = v;
     }
-    
+    if(min < 0) {
+        for(auto& p : phenotype)
+            p -= min;
+    }
+
+    double sum = std::accumulate(phenotype.begin(), phenotype.end(), 0.0);
+    if(sum == 0) {
+        for(auto& p : phenotype)
+            p = 1.0 / static_cast<double>(phenotype.size());
+    } else {
+        for(auto& p : phenotype)
+            p /= sum;
+    }
     std::partial_sum(phenotype.begin(), phenotype.end(), phenotype_added.begin());
+
+    for(double p : phenotype) {
+        if(p < 0 || p > 1) {
+            std::cout << p << " shouldn't exist (min=" << min << ", sum=" << sum << ")\n";
+        }
+    }
 }
 
-std::shared_ptr<Agent> Agent::make_offspring() const {
+std::shared_ptr<Agent> Agent::make_offspring() {
     std::vector<double> mutation = genome;
     Matrix m = matrix;
     
     for(size_t i = 0; i < mutation.size(); ++i) {
         if(rw::from_unit_interval() < args::mutation_probs[i]) {
-            mutation[i] += rw::from_unit_interval() - 0.5;
+            mutation[i] = rw::from_unit_interval();
         }
     }
     
@@ -84,12 +111,7 @@ std::shared_ptr<Agent> Agent::make_offspring() const {
         }
     }
 
-    std::shared_ptr<Agent> p = std::make_shared<Agent>(mutation, m, shared_from_this());
-    return p;
-}
-
-std::shared_ptr<const Agent> Agent::get_ancestor() const {
-    return ancestor;
+    return std::make_shared<Agent>(mutation, m, shared_from_this());
 }
 
 size_t Agent::play() {
@@ -109,71 +131,13 @@ void Agent::play_result(double points) {
     this->games_played += 1;
 }
 
-void Agent::reset_score() {
-    score = 0;
-}
-
-double Agent::get_score() const {
-    return score;
-}
-
-double Agent::avg_score() const {
-    return static_cast<double>(score) / games_played;
-}
-
-unsigned long Agent::size() const {
-    return genome.size();
-}
-
-std::vector<double> Agent::get_genome() const {
-    return genome;
-}
-
-std::vector<double> Agent::get_phenotype() const {
-    return phenotype;
-}
-
-Matrix Agent::get_matrix() const {
-    return matrix;
-}
-
-bool Agent::operator< (const Agent& a) const {
-    return score < a.score;
-}
-
-bool Agent::operator> (const Agent& a) const {
-    return score > a.score;
-}
-
-
-// TODO import boost (?)
-namespace boost {
-    namespace algorithm {
-        
-        template<typename T>
-        std::string join(std::vector<T> list, std::string delimiter) {
-            
-            std::stringstream ss;
-            auto it = list.begin();
-            if(it != list.end()) {
-                ss << *it;
-                
-                while(++it != list.end()) {
-                    ss << delimiter << *it;
-                }
-            }
-            
-            return ss.str();
-        }
-    }
-}
-
 std::ostream& operator<< (std::ostream& os, const Agent& agent) {
-    os << "Agent {\n";
-    os << "    genome = " << boost::algorithm::join(agent.genome, ", ") << "\n";
-    os << "    matrix = " << agent.matrix << "\n";
-    os << "    phenotype = " << boost::algorithm::join(agent.phenotype, ", ") << "\n";
-    os << "}";
+    // os << "Agent {\n";
+    // os << "    genome = " << boost::algorithm::join(agent.genome, ", ") << "\n";
+    // // os << "    matrix = " << agent.matrix << "\n";
+    // os << "    phenotype = " << boost::algorithm::join(agent.phenotype, ", ") << "\n";
+    // os << "}";
+    os << agent.phenotype.size() << '\n';
     
     return os;
 }

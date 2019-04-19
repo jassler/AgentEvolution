@@ -13,6 +13,7 @@
 #include "matrix.hpp"
 #include <initializer_list>
 #include <vector>
+#include <memory>
 #include <random>
 
 class Population {
@@ -39,9 +40,9 @@ public:
     std::vector<double> get_avg_genome();
     std::vector<double> get_avg_phenotype();
     
-    size_t size();
+    size_t size() const { return population_size; }
     
-    std::shared_ptr<Agent> operator[] (size_t i);
+    std::shared_ptr<Agent> operator[] (size_t i) const;
 };
 
 // template constructor must stay in header
@@ -52,8 +53,7 @@ Population::Population(const size_t population_size, const size_t opp_amount, co
     
     // create all agents
     for(size_t i = 0; i < population_size; ++i) {
-        std::shared_ptr<Agent> a = std::make_shared<Agent>(__args...);
-        agents.push_back(a);
+        agents.push_back(std::make_shared<Agent>(__args...));
     }
 }
 

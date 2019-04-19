@@ -142,27 +142,6 @@ double* Matrix::operator[](const int& index) const {
     return &m[static_cast<size_t>(index) * w];
 }
 
-std::ostream& operator<<(std::ostream& os, const Matrix& m) {
-    
-    os << "{";
-    
-    for(size_t y = 0; y < m.h; ++y) {
-        os << " { " << m.m[y * m.w];
-
-        for(size_t x = 1; x < m.w; ++x) {
-            os << "; " << m.m[y * m.w + x];
-        }
-        if(y < m.h - 1)
-            os << " };";
-        else
-            os << " }";
-    }
-
-    os << " }";
-    
-    return os;
-}
-
 Matrix::iterator Matrix::begin() {
     return m;
 }

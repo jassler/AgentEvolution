@@ -47,7 +47,6 @@ public:
     const_iterator begin() const;
     const_iterator end() const;
     
-    friend std::ostream& operator<<(std::ostream& os, const Matrix& m);
     friend Matrix operator*(const Matrix& a, const Matrix& b);
     friend std::vector<double> operator*(const Matrix& a, const std::vector<double>& v);
 };
@@ -70,6 +69,6 @@ Matrix::Matrix(const Container& matrix) : w(matrix.begin()->size()), h(matrix.si
             index++;
         }
     }
-}
+};
 
 #endif /* matrix_hpp */

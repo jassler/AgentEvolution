@@ -18,6 +18,7 @@
 
 namespace args {
     bool verbose;
+    bool create_info_file;
 
     // default options, may be overwritten by command line arguments
     unsigned int population_size;
@@ -35,13 +36,14 @@ namespace args {
     std::string filename;
     std::string separator;
 
-    std::string out_start;
-    std::string out_end;
+    std::string out_format;
+    size_t percent_multiplier;
 
     void reset() {
-        verbose = DEF_VERBOSE;
-
         // default options, may be overwritten by command line arguments
+        verbose = DEF_VERBOSE;
+        create_info_file = DEF_CRT_INFO_FILE;
+
         population_size = DEF_POP_SIZE;
         opponents       = DEF_OPP_SIZE;
         generations     = DEF_GENERATIONS;
@@ -56,8 +58,8 @@ namespace args {
         
         filename  = DEF_FILENAME;
         separator = DEF_SEP;
-        out_start = "\r";
-        out_end   = "%";
+        out_format = DEF_OUT_FORMAT;
+        percent_multiplier = DEF_PERC_MULTIPLIER;
     }
     
     std::vector<double> str_to_vec(std::string str) {
@@ -94,26 +96,27 @@ namespace args {
             std::string genome_str = "";
             std::string matrix_str = "";
             std::string payoff_str = "";
-            
+
             options
             .allow_unrecognised_options()
             .add_options()
-                ("a,agents"        , "number of agents for each generation (default " xstr(DEF_POP_SIZE) ")"                                      , value<unsigned int>(population_size))
-                ("o,opponents"     , "number of opponents each agent plays against (default " xstr(DEF_OPP_SIZE) ")"                              , value<unsigned int>(opponents))
-                ("g,generations"   , "number of generations to simulate (default " xstr(DEF_GENERATIONS) ")"                                      , value<unsigned int>(generations))
-                ("w,winners"       , "number of agents that are allowed to make offsprings after each generation (default " xstr(DEF_WIN_SIZE) ")", value<unsigned int>(winners))
-                ("s,genomestart"   , "values that genome should start with, separated by comma (default empty for random values)"                 , value<std::string>(genome_str))
-                ("matrixstart"     , "matrix to start with (default " DEF_MATRIX_STR ")"                                                          , value<std::string>(matrix_str))
-                ("probabilities"   , "probability for each genome to mutate (default " DEF_MUT_PROB_STR ")"                                       , value<std::string>(probs_str))
-                ("m,matrixmutation", "mutate matrices over each generation (default " xstr(DEF_MATRIX_MUTATION) ")"                               , value<double>(matrix_mutation))
-                ("p,payoff"        , "payoff matrix (default " DEF_PAYOFF_STR ")"                                                                 , value<std::string>(payoff_str))
-                ("f,file"          , "file to store results in (default " DEF_FILENAME ")"                                                        , value<std::string>(filename))
-                ("separator"       , "character or string that separates values in csv-file (default " DEF_SEP ")"                                , value<std::string>(separator))
-                ("v,verbose"       , "log output messages (default false)"                                                                        , value<bool>(verbose))
-                ("outstart"        , "string that output starts with (default \\r)"                                                               , value<std::string>(out_start))
-                ("outend"          , "string that output ends with (default %)"                                                                   , value<std::string>(out_end))
-                ("i,interactive"   , "set aforementioned options interactively")
-                ("h,help"          , "view command line options");
+                ("a,agents"         , "number of agents for each generation (default " xstr(DEF_POP_SIZE) ")"                                      , value<unsigned int>(population_size))
+                ("o,opponents"      , "number of opponents each agent plays against (default " xstr(DEF_OPP_SIZE) ")"                              , value<unsigned int>(opponents))
+                ("g,generations"    , "number of generations to simulate (default " xstr(DEF_GENERATIONS) ")"                                      , value<unsigned int>(generations))
+                ("w,winners"        , "number of agents that are allowed to make offsprings after each generation (default " xstr(DEF_WIN_SIZE) ")", value<unsigned int>(winners))
+                ("s,genomestart"    , "values that genome should start with, separated by comma (default empty for random values)"                 , value<std::string>(genome_str))
+                ("matrixstart"      , "matrix to start with (default " DEF_MATRIX_STR ")"                                                          , value<std::string>(matrix_str))
+                ("probabilities"    , "probability for each genome to mutate (default " DEF_MUT_PROB_STR ")"                                       , value<std::string>(probs_str))
+                ("m,matrixmutation" , "mutate matrices over each generation (default " xstr(DEF_MATRIX_MUTATION) ")"                               , value<double>(matrix_mutation))
+                ("p,payoff"         , "payoff matrix (default " DEF_PAYOFF_STR ")"                                                                 , value<std::string>(payoff_str))
+                ("f,file"           , "file to store results in (default " DEF_FILENAME ")"                                                        , value<std::string>(filename))
+                ("separator"        , "character or string that separates values in csv-file (default " DEF_SEP ")"                                , value<std::string>(separator))
+                ("infofile"         , "create info file (mostly log messages)"                                                                     , value<bool>(create_info_file))
+                ("v,verbose"        , "log output messages (default false)"                                                                        , value<bool>(verbose))
+                ("outformat"        , "format progress. Replaces %d->remaining time, %p->percentage, %n->new line (default " DEF_OUT_FORMAT ")"    , value<std::string>(out_format))
+                ("percentmultiplier", "update percentage every n-th/generations step, eg. if 1000, it outputs progress every 0.1% (default " xstr(DEF_PERC_MULTIPLIER) ")", value<size_t>(percent_multiplier))
+                ("i,interactive"    , "set aforementioned options interactively")
+                ("h,help"           , "view command line options");
             
             auto result = options.parse(argc, argv);
             
@@ -137,9 +140,10 @@ namespace args {
                 PROMPT_STR("Payoff matrix", payoff_str, DEF_PAYOFF_STR);
                 PROMPT_STR("File to save to", filename, DEF_FILENAME);
                 PROMPT_STR("csv separator", separator, DEF_SEP);
+                verbose = true;
             }
-            
-            if(!genome_str.empty()) {
+
+            if(!genome_str.empty() && genome_str != "{}" && genome_str != "{ }") {
                 genome = str_to_vec(genome_str);
             }
 

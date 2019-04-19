@@ -8,8 +8,10 @@
 
 #include "population.hpp"
 #include "randwrap.hpp"
+#include "argparser.hpp"
 #include <algorithm>
 #include <utility>
+#include <iostream>
 
 void Population::play_games() {
     std::shuffle(agents.begin(), agents.end(), rw::get_mt());
@@ -77,6 +79,7 @@ void Population::evaluate(size_t winner_amount) {
     /* create offsprings */
     auto win_it = winners.begin();
     std::vector<std::shared_ptr<Agent>> next_generation;
+
     while(next_generation.size() < population_size) {
         next_generation.push_back(agents[*win_it]->make_offspring());
         
@@ -132,10 +135,10 @@ std::vector<double> Population::get_avg_genome() {
     return avg;
 }
 
-size_t Population::size() {
-    return population_size;
-}
+std::shared_ptr<Agent> Population::operator[] (size_t i) const {
+    if(i >= population_size) {
+        throw "Index out of bounds (size is " + std::to_string(population_size) + ", but index was " + std::to_string(i) + ")";
+    }
 
-std::shared_ptr<Agent> Population::operator[] (size_t i) {
     return agents[i];
 }
