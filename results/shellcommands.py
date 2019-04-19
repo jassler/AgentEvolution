@@ -1,6 +1,5 @@
 import subprocess, os, sys
 from datetime import datetime
-from IPython.display import clear_output
 
 import pandas as pd
 
@@ -15,13 +14,8 @@ def update_progress(progress, in_IPython: bool = True):
     if progress >= 1:
         progress = 1
     block = int(round(bar_length * progress))
-    text = 'Progress: [{0}] {1:.1f}%'.format( '#' * block + '-' * (bar_length - block), progress * 100)
-
-    if in_IPython:
-        clear_output(wait = True)
-        print(text)
-    else:
-        print('\r{}'.format(text), end='')
+    text = '\rProgress: [{0}] {1:.1f}%'.format( '#' * block + '-' * (bar_length - block), progress * 100)
+    print('{}'.format(text), end='')
 
 def simulate_generations(args: dict = {}, print_progress: bool = True):
     arguments = {
