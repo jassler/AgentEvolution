@@ -155,31 +155,33 @@ std::ostream& operator<<(std::ostream& os, Matrix m) {
 }
 
 // work up ancestor tree of child node recursively, append genome to every row of infile
-int print_ancestors(std::shared_ptr<Agent> a, ResultFile& file) {
+void print_ancestors(std::shared_ptr<Agent> a, ResultFile& file, size_t reserve = 0) {
     std::string str;
+    std::vector<Agent*> lod;
+    lod.reserve(reserve);
 
-    if(a == nullptr) {
-        // header row of csv-file
-
-        file >> str;
-        file << str << '\n';
-        return 0;
+    while(a != nullptr) {
+        lod.push_back(a.get());
+        a = a->get_ancestor();
     }
 
-    int index = print_ancestors(a->get_ancestor(), file);
-
+    // header row
     file >> str;
-    file << str;
+    file << str << '\n';
 
-    WRITE_VEC(file, a->get_genome());
-    WRITE_VEC(file, a->get_phenotype());
-    file << args::separator << a->get_matrix();
-    file << '\n';
-    
-    return index + 1;
+    for(auto it = lod.rbegin(); it != lod.rend(); ++it) {
+        file >> str;
+        file << str;
+
+        WRITE_VEC(file, (*it)->get_genome());
+        WRITE_VEC(file, (*it)->get_phenotype());
+
+        file << args::separator << (*it)->get_matrix();
+        file << '\n';
+    }
 }
 
-void simulate_generations(Population& pop, const size_t& generations, ResultFile& file) {
+void simulate_generations(Population& pop, const size_t generations, ResultFile& file) {
 
     auto start = std::chrono::high_resolution_clock::now();
 
@@ -337,7 +339,7 @@ int main(int argc, char *argv[]) {
     std::cout << "Time elapsed: " << format_time(elapsed) << '\n';
     
     rf.change_file();
-    print_ancestors(population[0], rf);
+    print_ancestors(population[0], rf, args::generations + 1);
 
     return EXIT_SUCCESS;
 }
