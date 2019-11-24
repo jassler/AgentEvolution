@@ -2,7 +2,7 @@
 #include "gtest/gtest.h"
 
 TEST(MatrixTest, InitializationDefault) {
-    Matrix m(3, 3);
+    Matrix<3, 3> m;
 
     EXPECT_EQ(1, m[0][0]);
     EXPECT_EQ(1, m[1][1]);
@@ -38,7 +38,7 @@ TEST(MatrixTest, InitializationDefault) {
 
 // initialize matrix with initializer list
 TEST(MatrixTest, InitializationInline) {
-    Matrix m({
+    Matrix<3, 3> m({
         { 1, 4, 9 },
         { 5, -4, 0 },
         { 1, 4, 7 }
@@ -55,8 +55,29 @@ TEST(MatrixTest, InitializationInline) {
     EXPECT_EQ(7, m[2][2]);
 }
 
+// Assignment operator
+TEST(MatrixTest, Assignment) {
+    Matrix<2, 3> m1;
+    Matrix<2, 3> m2({
+        { 2, 4, 6 },
+        { -2, -6, -1 }
+    });
+
+    m1 = m2;
+
+    EXPECT_EQ(m2, m1);
+    EXPECT_EQ((Matrix<2,3>({{2,4,6},{-2,-6,-1}})), m1);
+}
+
+// MatrixException should be thrown here
+TEST(MatrixTest, InitializationInlineException) {
+    EXPECT_ANY_THROW((Matrix<2, 1>({{1}, {1,2}})));
+    EXPECT_ANY_THROW((Matrix<2, 1>({{1}, {2}, {3}})));
+    EXPECT_ANY_THROW((Matrix<1, 2>({{1,2}, {1}})));
+}
+
 TEST(MatrixTest, IsEqual) {
-    Matrix m1(3, 3);
+    Matrix<3, 3> m1;
     m1[0][0] = 1;
     m1[0][1] = 4;
     m1[0][2] = 9;
@@ -67,15 +88,15 @@ TEST(MatrixTest, IsEqual) {
     m1[2][1] = 4;
     m1[2][2] = 7;
 
-    Matrix m2({
+    Matrix<3, 3> m2({
         { 1, 4, 9 },
         { 5, -4, 0 },
         { 1, 4, 7 }
     });
 
-    Matrix m3({
-        { 1, 4, 5, -4, 0, 1, 4, 7 }
-    });
+    Matrix<3, 3> m3({
+        { 1, 4, 5}, { -4, 0, 1}, { 4, 7, 0 } }
+    );
 
     EXPECT_TRUE(m1 == m2);
 
@@ -85,27 +106,27 @@ TEST(MatrixTest, IsEqual) {
     EXPECT_FALSE(m1 == m3);
 }
 
-TEST(MatrixTest, Multiplication) {
-    Matrix v({
+TEST(MatrixTest, MatrixMultiplication) {
+    Matrix<3, 1> v({
         { 1 },
         { 1 },
         { 1 }
     });
 
-    Matrix m1({
+    Matrix<3, 3> m1({
         { 1, 4, 9 },
         { 5, -4, 0 },
         { 1, 4, 7 }
     });
 
-    Matrix m2({
+    Matrix<3, 2> m2({
         { 2, 8 },
         { 10, 0 },
         { -1, 1 }
     });
 
     Matrix res1 = m1 * v;
-    Matrix expected1({
+    Matrix<3, 1> expected1({
         { 14 },
         { 1 },
         { 12 }
@@ -115,7 +136,7 @@ TEST(MatrixTest, Multiplication) {
     EXPECT_EQ(expected1, res1);
 
     Matrix res2 = m1 * m2;
-    Matrix expected2({
+    Matrix<3, 2> expected2({
         { 33, 17 },
         { -30, 40 },
         { 35, 15 }
@@ -124,4 +145,11 @@ TEST(MatrixTest, Multiplication) {
     EXPECT_EQ(expected2.width(), res2.width());
     EXPECT_EQ(expected2.height(), res2.height());
     EXPECT_EQ(expected2, res2);
+}
+
+TEST(MatrixTest, ArrayMultiplication) {
+    Matrix<2, 3> m({{2, 3, 4}, {-1, 1, -2}});
+    std::array<double, 3> arr({3, 2, 5});
+    std::array<double, 2> expected({32, -11});
+    EXPECT_EQ(expected, (m * arr));
 }

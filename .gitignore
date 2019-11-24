@@ -3,6 +3,6 @@ bin/
 .idea/
 *.csv
 *.tmp
+*.png
 .DS_Store
-results/csvs/*
-__pycache__
+tests/googletest

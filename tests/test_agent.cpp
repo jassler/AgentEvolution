@@ -3,54 +3,73 @@
 #include "agent.hpp"
 #include "gtest/gtest.h"
 
-#define VEC(...) std::vector<double>{ __VA_ARGS__ }
-
 TEST(AgentTest, Initialization) {
-    Agent a({0.25, 0.25, 0.5});
+    Agent<3, 3> a({0.25, 0.25, 0.5});
     
-    std::vector<double> expected{0.25, 0.25, 0.5};
+    std::array<double, 3> expected{0.25, 0.25, 0.5};
     EXPECT_EQ(expected, a.get_genome());
     EXPECT_EQ(expected, a.get_phenotype());
 
-    EXPECT_EQ(0, a.get_score());
+//    EXPECT_EQ(0, a.get_score());
     EXPECT_EQ(3, a.get_genome().size());
     EXPECT_EQ(3, a.get_phenotype().size());
     EXPECT_EQ(nullptr, a.get_ancestor());
 
-    std::shared_ptr<Agent> parent = std::make_shared<Agent>(1);
-    EXPECT_EQ(VEC(1), parent->get_phenotype());
-    EXPECT_EQ(1, parent->get_genome().size());
-    EXPECT_EQ(1, parent->get_phenotype().size());
+    Agent<4, 4> b;
+    std::array<double, 4> expected_2{0.25, 0.25, 0.25, 0.25};
+    EXPECT_EQ(expected_2, b.get_genome());
+    EXPECT_EQ(expected_2, b.get_phenotype());
+}
 
-    std::shared_ptr<Agent> child = parent->make_offspring();
-    EXPECT_EQ(parent, child->get_ancestor());
+TEST(AgentTest, Offspring) {
+    Agent<3, 3> *a = new Agent<3, 3>({0.25, 0.25, 0.5});
+    EXPECT_EQ(nullptr, a->get_ancestor());
+
+    Agent<3, 3> *child1 = a->make_offspring();
+    Agent<3, 3> *child2 = a->make_offspring();
+    EXPECT_EQ(a, child1->get_ancestor());
+    EXPECT_EQ(a, child2->get_ancestor());
+    EXPECT_NE(child1, child2);
+
+    Agent<3, 3> *child11 = child1->make_offspring();
+    Agent<3, 3> *child21 = child2->make_offspring();
+
+    EXPECT_EQ(child1, child11->get_ancestor());
+    EXPECT_EQ(child2, child21->get_ancestor());
+    EXPECT_EQ(child11->get_ancestor()->get_ancestor(), child21->get_ancestor()->get_ancestor());
+    
+    child11->kill();
+    child21->kill();
 }
 
 TEST(AgentTest, Normalizing) {
-    Agent a({0.1, 0.1, 0.1});
-    std::vector<double> expected{1.0/3, 1.0/3, 1.0/3};
+    // a thirds
+    Agent<3, 3> a({0.1, 0.1, 0.1});
+    std::array<double, 3> expected{1.0/3, 1.0/3, 1.0/3};
     EXPECT_EQ(expected, a.get_phenotype());
 
     expected = {.1, .1, .1};
     EXPECT_EQ(expected, a.get_genome());
 
-    a = Agent({-1, 0, 1});
+    // one negative
+    a = Agent<3, 3>({-1, 0, 1});
     expected = {0, 1.0/3, 2.0/3};
     EXPECT_EQ(expected, a.get_phenotype());
 
     expected = {-1, 0, 1};
     EXPECT_EQ(expected, a.get_genome());
 
-    a = Agent({-1, -1, -1, -1});
-    expected = {.25, .25, .25, .25};
-    EXPECT_EQ(expected, a.get_phenotype());
+    // only negatives
+    Agent<4, 4> b({-1, -1, -1, -1});
+    std::array<double, 4> expected_b{.25, .25, .25, .25};
+    EXPECT_EQ(expected_b, b.get_phenotype());
 
-    expected = {-1, -1, -1, -1};
-    EXPECT_EQ(expected, a.get_genome());
+    expected_b = {-1, -1, -1, -1};
+    EXPECT_EQ(expected_b, b.get_genome());
 }
 
 TEST(AgentTest, Play) {
-    Agent a({0.25, 0.25, 0.5});
+    Agent<3, 3> a({0.25, 0.25, 0.5});
 
     EXPECT_EQ(0, a.play(0));
     EXPECT_EQ(0, a.play(0.1));
@@ -61,8 +80,9 @@ TEST(AgentTest, Play) {
     EXPECT_EQ(2, a.play(0.999));
     EXPECT_EQ(2, a.play(1));
 
-    std::vector<double> vec(8, 0.125);
-    Agent b(vec);
+    std::array<double, 8> vec;
+    vec.fill(1.0/8);
+    Agent<8, 8> b(vec);
     EXPECT_EQ(0, b.play(0));
     EXPECT_EQ(0, b.play(0.125));
     EXPECT_EQ(1, b.play(0.125001));
@@ -89,7 +109,7 @@ TEST(AgentTest, Play) {
 }
 
 TEST(AgentTest, OperatorCmp) {
-    Agent a(1), b(1);
+    Agent<1, 1> a, b;
     EXPECT_FALSE(a > b);
     EXPECT_FALSE(a < b);
 
