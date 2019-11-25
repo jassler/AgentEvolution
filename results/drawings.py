@@ -2,6 +2,8 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from multiprocessing.dummy import Pool as ThreadPool
+import shutil
+import threading
 import os
 
 plt.switch_backend('Agg')
@@ -115,45 +117,58 @@ def draw_file(filename: str, outfile: str = None):
     fig.savefig(outfile)
     plt.close(fig)
 
+threadLock = threading.Lock()
+total = 1
+progress = 0
 
 def plot_file(filename: str):
+    global total
+    global progress
+
     headers = []
-    df = pd.read_csv(os.path.join(plot_file.csv_folder, filename), sep=';')
+    df = pd.read_csv(os.path.join('csvs', filename), sep=';')
 
     for h in df.head():
         if h.startswith('phenotype_'):
             headers.append(h)
     
-    draw_file(os.path.join(csv_folder, filename), os.path.join(plot_file.png_folder, filename.replace('.csv', '.png')))
+    draw_file(os.path.join('csvs', filename), os.path.join('pngs', filename.replace('.csv', '.png')))
 
     if len(headers) != 3:
+        with threadLock:
+            progress += 1
+        print('{} / {} done ({}%)'.format(progress, total, int(progress * 100 / total)), end='\r')
         return
 
     ternary_plot(df[headers],
             title=os.path.basename(filename).replace('.csv', ''),
             labels=tuple(x.replace('_', ' ') for x in headers),
-            save_file=os.path.join(plot_file.ternary_folder, os.path.basename(filename).replace('.csv', '.png')))
+            save_file=os.path.join('ternary', filename.replace('.csv', '.png')))
+    
 
+    with threadLock:
+        progress += 1
+    print('{} / {} done ({}%)'.format(progress, total, int(progress * 100 / total)), end='\r')
 
 if __name__ == '__main__':
-    amount = len(os.listdir('csvs'))
-    count = 0
-    for folder in os.listdir('csvs'):
-        ternary_folder = os.path.join('ternary', folder)
-        png_folder = os.path.join('pngs', folder)
-        csv_folder = os.path.join('csvs', folder)
+    print('Preparing folder structure')
+    def ig_f(dir, files):
+        return [f for f in files if os.path.isfile(os.path.join(dir, f))]
 
-        if not os.path.exists(png_folder):
-            os.makedirs(png_folder)
+    csv_files = []
 
-        if not os.path.exists(ternary_folder):
-            os.makedirs(ternary_folder)
-        
-        plot_file.ternary_folder = ternary_folder
-        plot_file.csv_folder = csv_folder
-        plot_file.png_folder = png_folder
-        pool = ThreadPool(4)
-        pool.map(plot_file, os.listdir(csv_folder))
-        
-        count += 1
-        print('{} / {}'.format(count, amount), end='\r')
+    for root, dirs, files in os.walk("csvs", topdown=True):
+        for name in files:
+            if name.endswith('.csv'):
+                # remove csvs from beginning of string
+                csv_files.append(os.path.join(root[5:], name))
+    
+    shutil.copytree('csvs', 'pngs', ignore=ig_f)
+    shutil.copytree('csvs', 'ternary', ignore=ig_f)
+
+    total = len(csv_files)
+    
+    pool = ThreadPool(4)
+
+    print('Plotting...')
+    pool.map(plot_file, csv_files)
