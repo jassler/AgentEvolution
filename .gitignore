@@ -4,5 +4,6 @@ bin/
 *.csv
 *.tmp
 *.png
+*.out
 .DS_Store
 tests/googletest

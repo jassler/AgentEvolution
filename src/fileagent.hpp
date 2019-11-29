@@ -1,69 +1,80 @@
 #ifndef H_FILEAGENT
 #define H_FILEAGENT
 
+#include <array>
 #include <string>
 #include <fstream>
+#include <algorithm>
 #include "agent.hpp"
 
+// write csv file
+// as soon as value is added, a semicolon gets appended
 class FileAgent {
 private:
     std::string filename;
-    std::ofstream ofstream;
+    std::ofstream outfile;
 
     char delimiter;
 
 public:
-    FileAgent(std::string _filename, char _delimiter = ',')
-    : filename(_filename), ofstream(_filename), delimiter(_delimiter) {
-        if(!ofstream.is_open())
-            throw "Output file stream for filename \"" + filename + "\"isn't open!";
-    }
+    FileAgent(std::string _filename, char _delimiter = ',');
 
-    FileAgent& operator<<(size_t n) {
-        ofstream << n << delimiter;
-        return *this;
-    }
+    FileAgent& operator<<(size_t n);
+    FileAgent& operator<<(std::string s);
 
-    FileAgent& operator<<(std::string s) {
-        ofstream << s << delimiter;
-        return *this;
-    }
+    template<size_t S>
+    FileAgent& operator<<(std::array<double, S> arr);
 
     template<size_t TGensize, size_t TPhensize>
-    void print_header(Agent<TGensize, TPhensize>& a) {
-        // print g
-        for(size_t i = 0; i < TGensize; ++i) {
-            ofstream << "genome_" << i << delimiter;
-        }
-        for(size_t i = 0; i < TPhensize; ++i) {
-            ofstream << "phenotype_" << i << delimiter;
-        }
-        for(size_t y = 0; y < a.get_matrix().height(); ++y) {
-            for(size_t x = 0; x < a.get_matrix().width(); ++x) {
-                ofstream << "m_" << x << "_" << y << delimiter;
-            }
-        }
-        
-        ofstream << '\n';
-    }
+    void print_header(Agent<TGensize, TPhensize>& a);
 
     template<size_t TGensize, size_t TPhensize>
-    FileAgent& operator<<(Agent<TGensize, TPhensize>& a) {
-        // print g
-        for(auto g : a.get_genome()) ofstream << g << delimiter;
-        for(auto p : a.get_phenotype()) ofstream << p << delimiter;
+    FileAgent& operator<<(Agent<TGensize, TPhensize>& a);
 
-        for(auto& row : a.get_matrix()) {
-            for(auto cell : row) {
-                ofstream << cell << delimiter;
-            }
-        }
-
-        ofstream << '\n';
-        return *this;
-    }
-
-
+    void linebreak();
 };
+
+template<size_t S>
+FileAgent& FileAgent::operator<<(std::array<double, S> arr) {
+    for(auto& v : arr) {
+        outfile << v << delimiter;
+    }
+
+    return *this;
+}
+
+template<size_t TGensize, size_t TPhensize>
+void FileAgent::print_header(Agent<TGensize, TPhensize>& a) {
+    // print g
+    for(size_t i = 0; i < TGensize; ++i) {
+        outfile << "genome_" << i << delimiter;
+    }
+    for(size_t i = 0; i < TPhensize; ++i) {
+        outfile << "phenotype_" << i << delimiter;
+    }
+    for(size_t y = 0; y < a.get_matrix().height(); ++y) {
+        for(size_t x = 0; x < a.get_matrix().width(); ++x) {
+            outfile << "m_" << x << "_" << y << delimiter;
+        }
+    }
+    
+    outfile << '\n';
+}
+
+template<size_t TGensize, size_t TPhensize>
+FileAgent& FileAgent::operator<<(Agent<TGensize, TPhensize>& a) {
+    // print g
+    *this << a.get_genome();
+    *this << a.get_phenotype();
+
+    std::for_each(
+        a.get_matrix().begin(),
+        a.get_matrix().end(),
+        [&](auto& row) { *this << row; }
+    );
+
+    outfile << '\n';
+    return *this;
+}
 
 #endif

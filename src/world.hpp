@@ -6,6 +6,14 @@
 #include <random>
 #include "agent.hpp"
 
+
+template<size_t S>
+void operator+=(std::array<double, S>& a, const std::array<double, S> b) {
+    for(size_t i = 0; i < S; ++i) {
+        a[i] += b[i];
+    }
+}
+
 template<size_t TPopsize, size_t TGensize, size_t TPhensize>
 class World {
 private:
@@ -37,6 +45,23 @@ public:
     World(Agent<TGensize, TPhensize> default_agent, Matrix<TPhensize, TPhensize> payoff_matrix, std::mt19937 number_generator)
     : payoff(payoff_matrix), rng(number_generator), dist_players(0, TPopsize - 1) {
         population.fill(Agent(default_agent));
+    }
+
+    World(std::initializer_list<Agent<TGensize, TPhensize>> default_agents, Matrix<TPhensize, TPhensize> payoff_matrix)
+    : payoff(payoff_matrix), rng(get_rand_device_number()), dist_players(0, TPopsize - 1) {
+
+        auto type_amount = default_agents.size();
+        auto it = begin(population);
+
+        size_t prev = 0, count = 0;
+        size_t current;
+
+        for(const auto& a : default_agents) {
+            ++count;
+            current = std::round(static_cast<double>(count * TPopsize) / static_cast<double>(type_amount));
+            it = std::fill_n(it, current - prev, a);
+            prev = current;
+        }
     }
 
     void simulate_games(size_t opponents = 8) {
@@ -127,4 +152,22 @@ public:
     auto get_generation() const noexcept { return generation; }
     auto get_payoff() const noexcept { return payoff; }
     auto& operator[](size_t i) { return population.at(i); }
+
+    void calculate_average_phenotype(std::array<double, TPhensize>& result) {
+        result.fill(0);
+
+        // accumulate
+        std::for_each(
+            begin(population),
+            end(population),
+            [&](auto agent){ result += agent.get_phenotype(); }
+        );
+
+        // divide
+        std::for_each(
+            begin(result),
+            end(result),
+            [](auto& v){ v /= TPopsize; }
+        );
+    }
 };

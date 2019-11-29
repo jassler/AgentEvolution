@@ -1,6 +1,6 @@
 CC = g++
 INC = -I./src
-CFLAGS = -std=c++17 -O3 -Wall -Wl,-stack_size,0x100000000 -Wextra -Wshadow -Wnon-virtual-dtor -Wold-style-cast -Wcast-align -Wcast-align -Wunused -Woverloaded-virtual -Wpedantic -Wconversion
+CFLAGS = -std=c++17 -O3 -Wall -Wextra -Wshadow -Wnon-virtual-dtor -Wold-style-cast -Wcast-align -Wcast-align -Wunused -Woverloaded-virtual -Wpedantic -Wconversion
 # -Wsign-conversion -Wmisleading-indentation -Wduplicated-cond -Wduplicated-branches -Wlogical-op -Wnull-dereference -Wuseless-cast -Wdouble-promotion -Wformat=2
 
 ODIR = bin
@@ -11,7 +11,7 @@ SDIR = src
 POPULATION=1000
 GENSIZE=3
 PHENSIZE=3
-PAYOFF="{{0,1,1},{-1,0,1},{-1,-1,0}}"
+PAYOFF="{{0,1,-1},{-1,0,1},{1,-1,0}}"
 AGENTSTART="{0.333,0.333,0.333}"
 GENOME_PROB=0.0001
 MATRIX_PROB=0
@@ -24,7 +24,7 @@ OBJS = $(patsubst %,$(OBJDIR)/%,$(_OBJS))
 
 # main output
 $(OFILE): $(OBJS)
-	$(CC) -o $(OFILE) $(CFLAGS) $(OBJS) $(DEFINES)
+	$(CC) -o $(OFILE) $(CFLAGS) $(OBJS) $(DEFINES) -Wl,-stack_size,0x100000000
 
 # all object files only depend on their corresponding .cpp-files
 # mostly gotten from here: https://stackoverflow.com/questions/1814270

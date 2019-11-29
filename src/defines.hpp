@@ -2,7 +2,7 @@
 #define QUOTE(x) Q(x)
 
 #ifndef POPULATION
-#define POPULATION 1000
+#define POPULATION 1024
 #endif
 #define POPULATION_STR QUOTE(POPULATION)
 
@@ -17,7 +17,7 @@
 #define PHENSIZE_STR QUOTE(PHENSIZE)
 
 #ifndef PAYOFF
-#define PAYOFF {{0,1,1},{-1,0,1},{-1,-1,0}}
+#define PAYOFF {{0,1,-1},{-1,0,1},{1,-1,0}}
 #endif
 #define PAYOFF_STR QUOTE(PAYOFF)
 
@@ -40,3 +40,10 @@
 #define MATRIX_PROB 0
 #endif
 #define MATRIX_PROB_STR QUOTE(MATRIX_PROB)
+
+#ifndef RESULTS_FOLDER
+#define RESULTS_FOLDER "results/csvs/"
+#endif
+
+#define LOG_PROGRESS 1
+#define LOG_GENERATION 1

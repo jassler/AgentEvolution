@@ -25,21 +25,20 @@ TEST(AgentTest, Offspring) {
     Agent<3, 3> *a = new Agent<3, 3>({0.25, 0.25, 0.5});
     EXPECT_EQ(nullptr, a->get_ancestor());
 
-    Agent<3, 3> *child1 = a->make_offspring();
-    Agent<3, 3> *child2 = a->make_offspring();
-    EXPECT_EQ(a, child1->get_ancestor());
-    EXPECT_EQ(a, child2->get_ancestor());
-    EXPECT_NE(child1, child2);
+    Agent<3, 3> child1 = a->make_offspring();
+    Agent<3, 3> child2 = a->make_offspring();
+    EXPECT_EQ(a, child1.get_ancestor());
+    EXPECT_EQ(a, child2.get_ancestor());
+    EXPECT_NE(&child1, &child2);
 
-    Agent<3, 3> *child11 = child1->make_offspring();
-    Agent<3, 3> *child21 = child2->make_offspring();
+    Agent<3, 3> child11 = child1.make_offspring();
+    Agent<3, 3> child21 = child2.make_offspring();
 
-    EXPECT_EQ(child1, child11->get_ancestor());
-    EXPECT_EQ(child2, child21->get_ancestor());
-    EXPECT_EQ(child11->get_ancestor()->get_ancestor(), child21->get_ancestor()->get_ancestor());
+    EXPECT_EQ(&child1, child11.get_ancestor());
+    EXPECT_EQ(&child2, child21.get_ancestor());
+    EXPECT_EQ(child11.get_ancestor()->get_ancestor(), child21.get_ancestor()->get_ancestor());
     
-    child11->kill();
-    child21->kill();
+    delete a;
 }
 
 TEST(AgentTest, Normalizing) {
