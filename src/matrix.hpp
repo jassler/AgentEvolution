@@ -33,6 +33,8 @@ public:
     constexpr auto end() noexcept;
     constexpr auto end() const noexcept;
 
+    char *hash(size_t &len);
+
     // matrix multiplication
     // width of left matrix has to match height of right matrix
     // a[m,n] * b[n,o] -> c[m,o]
@@ -141,6 +143,19 @@ constexpr auto Matrix<H,W,T>::end() noexcept { return m.end(); }
 template<size_t H, size_t W, typename T>
 constexpr auto Matrix<H,W,T>::end() const noexcept { return m.end(); }
 
+// convert matrix to char array (hashing)
+template<size_t H, size_t W, typename T>
+char *Matrix<H,W,T>::hash(size_t& len) {
+    static char current_hash[H * W * sizeof(T)];
+    T *ptr = reinterpret_cast<T *>(current_hash);
+    len = H * W * sizeof(T);
+
+    for(auto& row : m)
+        for(auto col : row)
+            *(ptr++) = col;
+
+    return current_hash;
+}
 
 // matrix multiplication
 // width of left matrix has to match height of right matrix
