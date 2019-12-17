@@ -6,36 +6,24 @@ import termcolor
 import os
 
 folder = 'results/csvs'
-runs = 50
+runs = 100
 
 exec_total = 0
-runs_total = 0
-
 exec_count = 0
-runs_count = 0
 
 threadLock = threading.Lock()
 
 def call_subprocess(executable: str):
     global runs
-    global runs_total
-    global runs_count
     global exec_total
     global exec_count
     
-    filename_placeholder = '{0}/{1}/{1}_{{}}.csv'.format(folder, executable.replace('.out', ''))
+    result_folder = os.path.join(folder, executable.replace('.out', ''))
+    filename = os.path.join(result_folder, executable.replace('.out', ''))
 
-    count = 0
-    for _ in range(0,runs):
-        while os.path.exists(filename_placeholder.format(count)):
-            count += 1
-        
-        filename = filename_placeholder.format(count)
-        subprocess.run(["./bin/{}".format(executable), filename])
-
-        with threadLock:
-            runs_count += 1
-        print('{:.2f}% runs'.format(float(runs_count * 100) / runs_total))
+    args = ["./bin/{}".format(executable), '-f', filename, '-r', str(runs), '>>', folder]
+    print(subprocess.list2cmdline(args))
+    subprocess.run(args)
     
     with threadLock:
         exec_count += 1
@@ -53,7 +41,8 @@ if __name__ == "__main__":
 
     exec_total = len(executables)
     runs_total = exec_total * runs
-    pool = ThreadPool(2)
+    pool = ThreadPool(4)
+    print(executables)
     pool.map(call_subprocess, executables)
     
     print('done')
