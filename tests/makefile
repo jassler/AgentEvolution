@@ -22,7 +22,7 @@ DEFINES=-DPOPULATION=$(POPULATION) -DGENSIZE=$(GENSIZE) -DPHENSIZE=$(PHENSIZE) -
 # _TESTOBJ = test.o test_argparser.o test_matrix.o test_agent.o test_population.o
 # _SRCOBJ = agent.o matrix.o population.o randwrap.o argparser.o
 _TESTOBJ = test.o test_matrix.o test_agent.o test_world.o
-_SRCOBJ = matrix.o matrixexception.o agent.o randwrap.o world.o
+_SRCOBJ = matrix.o matrixexception.o agent.o randwrap.o world.o fileagent.o
 _OBJS = $(_SRCOBJ) $(_TESTOBJ)
 OBJS = $(patsubst %,$(OBJDIR)/%,$(_OBJS))
 
