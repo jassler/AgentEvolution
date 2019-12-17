@@ -24,7 +24,6 @@
 #ifndef AGENTSTART
 #define AGENTSTART {0.25,0.25,0.5}
 #endif
-#define AGENTSTART_STR QUOTE(AGENTSTART)
 
 #ifndef GENERATIONS
 #define GENERATIONS 10000
@@ -41,9 +40,14 @@
 #endif
 #define MATRIX_PROB_STR QUOTE(MATRIX_PROB)
 
-#ifndef RESULTS_FOLDER
-#define RESULTS_FOLDER "results/csvs/"
+#ifndef AGENTCONDITION
+#define AGENTCONDITION agent.get_genome()[0]==1.0/3.0
 #endif
 
+#ifndef LOG_DEBUG
+#define LOG_DEBUG 1
+#endif
+
+#ifndef LOG_PROGRESS
 #define LOG_PROGRESS 1
-#define LOG_GENERATION 1
+#endif
