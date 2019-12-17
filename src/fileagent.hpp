@@ -5,7 +5,58 @@
 #include <string>
 #include <fstream>
 #include <algorithm>
+#include "prettyprint.hpp"
 #include "agent.hpp"
+
+template <size_t S>
+void binaryfile_to_csv(std::string filename, std::string resultfilename, std::array<std::string, S> header, char sep = ';') {
+
+    // open binary file
+    std::ifstream infile(filename, std::ios::binary);
+    if(!infile.is_open()) {
+        std::cerr << "Binary file \"" << filename << "\" couldn't be opened. No conversion possible";
+        return;
+    }
+
+    // setup outstream
+    // if outfile can't be opened, print to cout
+    std::streambuf *buf;
+    std::ofstream outfile(resultfilename);
+    if(outfile.is_open()) {
+        buf = outfile.rdbuf();
+    } else {
+        std::cerr << "File \"" << resultfilename << "\" couldn't be opened. Instead ouptutting to stdout\n";
+        buf = std::cout.rdbuf();
+    }
+    std::ostream out(buf);
+
+    // header
+    out << pp::join(header, sep) << '\n';
+    
+    // every time columns_left hits 0, a new line gets printed
+    size_t columns_left = header.size();
+
+    // value in binary file gets read into d
+    double d;
+
+    // read binary file
+    while (true) {
+        if(!infile.read(reinterpret_cast<char *>(&d), sizeof(double)))
+            break;
+
+        out << d;
+        if(--columns_left)
+            out << sep;
+        else {
+            out << '\n';
+            columns_left = header.size();
+        }
+    }
+
+    infile.close();
+    if(outfile.is_open())
+        outfile.close();
+}
 
 // write csv file
 // as soon as value is added, a semicolon gets appended
@@ -19,17 +70,18 @@ private:
 public:
     FileAgent(std::string _filename, char _delimiter = ',');
 
-    FileAgent& operator<<(size_t n);
-    FileAgent& operator<<(std::string s);
+    FileAgent &operator<<(size_t n);
+    FileAgent &operator<<(std::string s);
+    void add_string(std::string s);
 
-    template<size_t S>
-    FileAgent& operator<<(std::array<double, S> arr);
+    template <size_t S>
+    FileAgent &operator<<(std::array<double, S> arr);
 
-    template<size_t TGensize, size_t TPhensize>
-    void print_header(Agent<TGensize, TPhensize>& a);
+    template <size_t TGensize, size_t TPhensize>
+    void print_header(Agent<TGensize, TPhensize> &a);
 
-    template<size_t TGensize, size_t TPhensize>
-    FileAgent& operator<<(Agent<TGensize, TPhensize>& a);
+    template <size_t TGensize, size_t TPhensize>
+    FileAgent &operator<<(Agent<TGensize, TPhensize> &a);
 
     void linebreak();
 };
