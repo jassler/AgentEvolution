@@ -19,6 +19,7 @@ class World {
 private:
 
     std::array<Agent<TGensize, TPhensize>, TPopsize> population;
+    std::array<Agent<TGensize, TPhensize>, TPopsize> start_population;
     Matrix<TPhensize, TPhensize> payoff;
 
     size_t generation = 0;
@@ -39,29 +40,47 @@ public:
     // Random number generator
     World(Agent<TGensize, TPhensize> default_agent, Matrix<TPhensize, TPhensize> payoff_matrix)
     : payoff(payoff_matrix), rng(get_rand_device_number()), dist_players(0, TPopsize - 1) {
-        population.fill(Agent(default_agent));
+        start_population.fill(Agent(default_agent));
+
+        reset_population();
     }
 
     World(Agent<TGensize, TPhensize> default_agent, Matrix<TPhensize, TPhensize> payoff_matrix, std::mt19937 number_generator)
     : payoff(payoff_matrix), rng(number_generator), dist_players(0, TPopsize - 1) {
-        population.fill(Agent(default_agent));
+        start_population.fill(Agent(default_agent));
+
+        reset_population();
     }
 
     World(std::initializer_list<Agent<TGensize, TPhensize>> default_agents, Matrix<TPhensize, TPhensize> payoff_matrix)
     : payoff(payoff_matrix), rng(get_rand_device_number()), dist_players(0, TPopsize - 1) {
 
         auto type_amount = default_agents.size();
-        auto it = begin(population);
+        auto it = begin(start_population);
 
         size_t prev = 0, count = 0;
         size_t current;
 
         for(const auto& a : default_agents) {
             ++count;
-            current = std::round(static_cast<double>(count * TPopsize) / static_cast<double>(type_amount));
+            current = static_cast<size_t>(std::round(static_cast<double>(count * TPopsize) / static_cast<double>(type_amount)));
             it = std::fill_n(it, current - prev, a);
             prev = current;
         }
+
+        reset_population();
+    }
+
+    void reset_population() noexcept {
+        population = start_population;
+
+        if(generation == 0)
+            return;
+        
+        for (auto &a : population) {
+            a.get_ancestor()->child_died();
+        }
+        generation = 0;
     }
 
     void simulate_games(size_t opponents = 8) {
@@ -151,7 +170,14 @@ public:
 
     auto get_generation() const noexcept { return generation; }
     auto get_payoff() const noexcept { return payoff; }
-    auto& operator[](size_t i) { return population.at(i); }
+    Agent<TGensize, TPhensize>* get_best_agent() noexcept { return std::max(begin(population), end(population)); }
+
+    template <class TPredicate>
+    inline auto count_agent_if(TPredicate predicate) const noexcept {
+        return std::count_if(begin(population), end(population), predicate);
+    }
+    
+    auto &operator[](size_t i) { return population.at(i); }
 
     void calculate_average_phenotype(std::array<double, TPhensize>& result) {
         result.fill(0);
