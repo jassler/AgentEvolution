@@ -7,6 +7,9 @@
 
 #include <iostream>
 
+namespace AgentCount {
+extern size_t n;
+}
 
 template<size_t TGensize, size_t TPhensize>
 class Agent {
@@ -28,6 +31,8 @@ public:
     Agent(const std::array<double, TGensize> genome_start, Agent *parent = nullptr);
     Agent(const std::array<double, TGensize> genome_start, Matrix<TPhensize, TGensize> matrix_start, Agent *parent = nullptr);
     Agent(const Agent& agent);
+
+    ~Agent();
 
     Agent make_offspring();
 
@@ -80,6 +85,7 @@ Agent<TGensize, TPhensize>::Agent()
 : ancestor(nullptr) {
     genome.fill(1.0 / TGensize);
     phenotype.fill(1.0 / TPhensize);
+    ++AgentCount::n;
 }
 
 template<size_t TGensize, size_t TPhensize>
@@ -87,12 +93,14 @@ Agent<TGensize, TPhensize>::Agent(const std::array<double, TGensize> genome_star
 : genome(genome_start), ancestor(parent)  {
     phenotype = matrix * genome_start;
     normalize();
+    ++AgentCount::n;
 }
 
 template<size_t TGensize, size_t TPhensize>
 Agent<TGensize, TPhensize>::Agent(const std::array<double, TGensize> genome_start, Matrix<TPhensize, TGensize> matrix_start, Agent *parent)
 : genome(genome_start), phenotype(matrix_start * genome_start), matrix(matrix_start), ancestor(parent) {
     normalize();
+    ++AgentCount::n;
 }
 
 template<size_t TGensize, size_t TPhensize>
@@ -103,6 +111,12 @@ Agent<TGensize, TPhensize>::Agent(const Agent& agent) {
     this->matrix = agent.matrix;
     this->ancestor = agent.ancestor;
     this->children = agent.children;
+    ++AgentCount::n;
+}
+
+template<size_t TGensize, size_t TPhensize>
+Agent<TGensize, TPhensize>::~Agent() {
+    --AgentCount::n;
 }
 
 template<size_t TGensize, size_t TPhensize>
