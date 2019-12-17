@@ -158,3 +158,16 @@ TEST(WorldTest, Average) {
     world.calculate_average_phenotype(result);
     EXPECT_EQ(result, avg);
 }
+
+TEST(WorldTest, GarbageCollection) {
+    World<1000, 3, 3> world(Agent<3, 3>({0.25, 0.25, 0.5}), {{0, 1, -1}, {-1, 0, 1}, {0, -1, 1}});
+
+    size_t current = AgentCount::n;
+
+    for (int i = 0; i < 50; ++i)
+        world.simulate_generation();
+    world.reset_population();
+
+    EXPECT_EQ(current, AgentCount::n);
+
+}
