@@ -153,3 +153,27 @@ TEST(MatrixTest, ArrayMultiplication) {
     std::array<double, 2> expected({32, -11});
     EXPECT_EQ(expected, (m * arr));
 }
+
+TEST(MatrixTest, Hash) {
+    Matrix<1, 4, double> m1({{0.5, 4, -1.91, 22}});
+
+    size_t size;
+    char *hash = m1.hash(size);
+
+    EXPECT_EQ(size, 4 * sizeof(double));
+
+    double d = *(reinterpret_cast<double *>(hash));
+    EXPECT_EQ(d, 0.5);
+
+    hash += sizeof(double);
+    d = *(reinterpret_cast<double *>(hash));
+    EXPECT_EQ(d, 4);
+
+    hash += sizeof(double);
+    d = *(reinterpret_cast<double *>(hash));
+    EXPECT_EQ(d, -1.91);
+
+    hash += sizeof(double);
+    d = *(reinterpret_cast<double *>(hash));
+    EXPECT_EQ(d, 22);
+}
