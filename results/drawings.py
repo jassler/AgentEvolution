@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 from multiprocessing.dummy import Pool as ThreadPool
 import shutil
 import threading
+from os import path
 import os
 
 plt.switch_backend('Agg')
@@ -14,7 +15,7 @@ def ternary_plot(data,
                  sides = 3,
                  start_angle = 90,
                  fig_args = {'figsize':(18,18),'facecolor':'white','edgecolor':'white'},
-                 edge_args = {'color':'black','linewidth':2},
+                 edge_args = {'color':'black','linewidth':4},
                  line_color = (0, 0, 0),
                  rotate_labels = False,
                  label_offset = 0.10,
@@ -84,35 +85,27 @@ def ternary_plot(data,
     end = len(newdata[:,0]) - 1
     # for i in range(0,end):
     #     ax.plot(newdata[:,0][i:i+2], newdata[:,1][i:i+2], '.-', linewidth=2, alpha=0.99, c=(0, i / end, i / end))
-    ax.plot(newdata[:,0], newdata[:,1], linewidth=2, alpha=0.99, c='#603f40')
+    ax.plot(newdata[:,0], newdata[:,1], linewidth=4, alpha=0.99, c='#107bb7')
     
     # fig.show()
     
     if save_file is not None:
-        fig.savefig(save_file)
+        fig.savefig(save_file, transparent=True)
     plt.close(fig)
 
-def draw_file(filename: str, outfile: str = None):
-    if outfile is None:
-        outfile = 'pngs/{}.png'.format(filename.replace('.csv', ''))
-    
-    headers = []
+def draw_file(filename: str, outfile: str, headers, title: str = ''):
     colors=['grey', 'green', 'orange', 'cyan', 'red', 'black']
     df = pd.read_csv(filename, sep=';')
-
-    for h in df.head():
-        if h.startswith('phenotype_'):
-            headers.append(h)
     
     fig = plt.figure()
     ax = fig.gca()
     
     for i in range(0, len(headers)):
-        ax.plot(df['generation'], df[headers[i]], color=colors[i%len(colors)], linewidth=2, label=headers[i])
+        ax.plot(df[headers[i]], color=colors[i%len(colors)], linewidth=2, label=headers[i])
 
     ax.set_xlabel('Generation')
     ax.set_ylabel('Probability')
-    ax.set_title(filename.replace('.csv', ''))
+    ax.set_title(title)
     ax.legend()
     fig.savefig(outfile)
     plt.close(fig)
@@ -121,54 +114,84 @@ threadLock = threading.Lock()
 total = 1
 progress = 0
 
-def plot_file(filename: str):
+def plot_file(filename: str, dest_plotline: str = None, dest_ternary: str = None, header_start: str = 'LOD_phensize_'):
+    '''
+    plot_file takes csv file path as input and plots to corresponding destinations (png format)
+    if dest_xxx is None, no plot is produced
+
+    - dest_plotline: line plot to output
+    - dest_ternary: ternary plot, only applies if headers have a length of 3
+    - header_start: headers to look for in csv. We assume they come in a format of "name_1", "name_2", "name_3", ...
+    '''
     global total
     global progress
 
     headers = []
-    df = pd.read_csv(os.path.join('csvs', filename), sep=';')
+    df = pd.read_csv(filename, sep=';')
 
     for h in df.head():
-        if h.startswith('phenotype_'):
+        if h.startswith(header_start):
             headers.append(h)
     
-    draw_file(os.path.join('csvs', filename), os.path.join('pngs', filename.replace('.csv', '.png')))
+    # draw 2d plot
+    if dest_plotline is not None:
+        draw_file(filename, dest_plotline, headers, title=path.split(filename)[-1].replace('.png', ''))
 
-    if len(headers) != 3:
-        with threadLock:
-            progress += 1
-        print('{} / {} done ({}%)'.format(progress, total, int(progress * 100 / total)), end='\r')
-        return
-
-    ternary_plot(df[headers],
-            title=os.path.basename(filename).replace('.csv', ''),
-            labels=tuple(x.replace('_', ' ') for x in headers),
-            save_file=os.path.join('ternary', filename.replace('.csv', '.png')))
+    # draw ternary plot
+    if len(headers) == 3 and dest_ternary is not None:
+        ternary_plot(df[headers],
+                title="",#os.path.basename(filename).replace('.csv', ''),
+                # labels=tuple(x.replace('LOD_phensize_0', 'Rock').replace('LOD_phensize_1', 'Scissors').replace('LOD_phensize_2', 'Paper') for x in headers),
+                labels=('0', '1', '2'),
+                save_file=dest_ternary)
     
-
+    # show progress
     with threadLock:
         progress += 1
     print('{} / {} done ({}%)'.format(progress, total, int(progress * 100 / total)), end='\r')
 
+def prepare_files(src: str, dest: list) -> dict:
+    '''
+    prepare_files copies folder structure from src to dest
+    returns dictionary:
+    - key: path to csv file in src
+    - value: path to png file without src (dest not prepended, must be done manually)
+    '''
+    csv_files = {}
+
+    # create "root" directories
+    for d in dest:
+        if not path.exists(d):
+            os.mkdir(d)
+
+    for root, dirs, files in os.walk(src, topdown=True):
+        root_without_src = root.replace(src, '').strip('/')
+
+        # copy folder structure
+        for dir in dirs:
+            p = path.join(root_without_src, dir)
+            for d in dest:
+                final = path.join(d, p)
+                if not path.exists(final):
+                    os.mkdir(final)
+        
+        # search csvs
+        for f in files:
+            if f.endswith('_avg.csv'):
+                csv_files[path.join(root, f)] = path.join(root_without_src, f.replace('.csv', '.png'))
+    
+    return csv_files
+
 if __name__ == '__main__':
     print('Preparing folder structure')
-    def ig_f(dir, files):
-        return [f for f in files if os.path.isfile(os.path.join(dir, f))]
 
-    csv_files = []
-
-    for root, dirs, files in os.walk("csvs", topdown=True):
-        for name in files:
-            if name.endswith('.csv'):
-                # remove csvs from beginning of string
-                csv_files.append(os.path.join(root[5:], name))
-    
-    shutil.copytree('csvs', 'pngs', ignore=ig_f)
-    shutil.copytree('csvs', 'ternary', ignore=ig_f)
-
+    csv_files = prepare_files('csvs', ['ternary', 'pngs'])
     total = len(csv_files)
+    for key, value in csv_files.items():    
+        plot_file(key, dest_plotline=path.join('pngs', value), dest_ternary=path.join('ternary', value))
     
-    pool = ThreadPool(4)
+    # pool = ThreadPool(4)
 
-    print('Plotting...')
-    pool.map(plot_file, csv_files)
+    # print('Plotting...')
+    # pool.map(plot_file, csv_files)
+
