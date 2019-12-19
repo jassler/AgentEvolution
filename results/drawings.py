@@ -177,7 +177,7 @@ def prepare_files(src: str, dest: list) -> dict:
         
         # search csvs
         for f in files:
-            if f.endswith('_avg.csv'):
+            if f.endswith('.csv'):
                 csv_files[path.join(root, f)] = path.join(root_without_src, f.replace('.csv', '.png'))
     
     return csv_files
