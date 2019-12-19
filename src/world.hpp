@@ -72,15 +72,14 @@ public:
     }
 
     void reset_population() noexcept {
-        population = start_population;
 
-        if(generation == 0)
-            return;
-        
-        for (auto &a : population) {
-            a.get_ancestor()->child_died();
+        if(generation > 0) {
+            for (auto &a : population) {
+                a.get_ancestor()->child_died();
+            }
+            generation = 0;
         }
-        generation = 0;
+        population = start_population;
     }
 
     void simulate_games(size_t opponents = 8) {
