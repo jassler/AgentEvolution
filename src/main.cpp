@@ -7,11 +7,14 @@
 #define LOG_LOD_BUFFER (GENSIZE * PHENSIZE + GENSIZE + PHENSIZE)
 #define OUTBUFFERSIZE ((GENERATIONS + 1) * (LOG_GENERATION_BUFFER + LOG_LOD_BUFFER))
 
-// skip specifies how many cells the main function wants to utilise (for LOD logging)
-template<size_t TPopsize, size_t TGensize, size_t TPhensize>
-void do_simulations(World<TPopsize, TGensize, TPhensize>& world, const size_t amount, double *outbuffer) {
+World<POPULATION, GENSIZE, PHENSIZE> world({AGENTSTART}, PAYOFF);
+double outbuffer[OUTBUFFERSIZE];
+std::array<Agent<GENSIZE, PHENSIZE> *, GENERATIONS+1> lod_vector;
 
-    std::array<double, TPhensize> avg;
+// skip specifies how many cells the main function wants to utilise (for LOD logging)
+void do_simulations(const size_t amount) {
+
+    std::array<double, PHENSIZE> avg;
     double *buffer_ptr = outbuffer;
     double *end_ptr = outbuffer + OUTBUFFERSIZE;
 
@@ -45,8 +48,7 @@ void do_simulations(World<TPopsize, TGensize, TPhensize>& world, const size_t am
     }
 }
 
-template<size_t TPopsize, size_t TGensize, size_t TPhensize>
-std::string generate_filename(const World<TPopsize, TGensize, TPhensize>& world) {
+std::string generate_filename() {
     std::string name;
 
     for(auto& row : world.get_payoff()) {
@@ -86,9 +88,8 @@ std::string next_available_filename(std::string basename, std::string extension)
     return f;
 }
 
-template<size_t TPopsize, size_t TGensize, size_t TPhensize>
-void parse_args(int argc, char** argv, const World<TPopsize, TGensize, TPhensize>& world, std::string& filename, size_t& rounds) {
-    filename = generate_filename(world);
+void parse_args(int argc, char** argv, std::string& filename, size_t& rounds) {
+    filename = generate_filename();
     rounds = 1;
 
     for (int i = 1; i < argc; ++i) {
@@ -126,8 +127,7 @@ void parse_args(int argc, char** argv, const World<TPopsize, TGensize, TPhensize
     }
 }
 
-template<size_t TPopsize, size_t TGensize, size_t TPhensize>
-void log_info(World<TPopsize, TGensize, TPhensize>& world, std::string outfile, size_t rounds) {
+void log_info(std::string outfile, size_t rounds) {
     std::cout << "Population size: " POPULATION_STR "\n";
     std::cout << "Genome size    : " GENSIZE_STR "\n";
     std::cout << "Phenotype size : " PHENSIZE_STR "\n";
@@ -230,7 +230,6 @@ int main(int argc, char** argv) {
      * SETUP
      */
     LOG_DEBUG_MSG("Setting up world");
-    World<POPULATION, GENSIZE, PHENSIZE> world({AGENTSTART}, PAYOFF);
 
     // filename structure: <base_filename>_#.csv
     // # = 0 to number of rounds, or avg when calculation is applied at the end
@@ -238,7 +237,7 @@ int main(int argc, char** argv) {
     size_t rounds_total, rounds;
 
     LOG_DEBUG_MSG("Parsing arguments");
-    parse_args(argc, argv, world, base_filename, rounds_total);
+    parse_args(argc, argv, base_filename, rounds_total);
     rounds = rounds_total;
     LOG_DEBUG_MSG("Arguments: filename = " << base_filename << ", rounds = " << rounds_total);
 
@@ -248,15 +247,11 @@ int main(int argc, char** argv) {
     /*
      * LOGGING
      */
-    log_info(world, base_filename, rounds);
+    log_info(base_filename, rounds);
 
     /*
      * SIMULATIONS
      */
-    double outbuffer[OUTBUFFERSIZE];
-
-    std::array<Agent<GENSIZE, PHENSIZE> *, GENERATIONS+1> lod_vector;
-
     auto begin = std::chrono::steady_clock::now();
 
     LOG_DEBUG_MSG("Starting simulation");
@@ -266,8 +261,7 @@ int main(int argc, char** argv) {
         world.reset_population();
 
         // Simulation
-        LOG_DEBUG_MSG("Starting simulation");
-        do_simulations(world, GENERATIONS, outbuffer);
+        do_simulations(GENERATIONS);
 
         // LOD
         LOG_DEBUG_MSG("\nDoing LOD");
