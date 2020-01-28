@@ -7,3 +7,5 @@ bin/
 *.out
 .DS_Store
 tests/googletest
+
+*.txt
