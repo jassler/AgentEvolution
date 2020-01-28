@@ -168,6 +168,6 @@ TEST(WorldTest, GarbageCollection) {
         world.simulate_generation();
     world.reset_population();
 
-    EXPECT_EQ(current, AgentCount::n);
+    EXPECT_EQ(current+world.getPopsize(), AgentCount::n);
 
 }
