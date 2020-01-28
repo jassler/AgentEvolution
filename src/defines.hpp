@@ -40,9 +40,9 @@
 #endif
 #define MATRIX_PROB_STR QUOTE(MATRIX_PROB)
 
-#ifndef AGENTCONDITION
-#define AGENTCONDITION agent.get_genome()[0]==1.0/3.0
-#endif
+// #ifndef AGENTCONDITION
+// #define AGENTCONDITION agent.get_genome()[0]==1.0/3.0
+// #endif
 
 #ifndef LOG_DEBUG
 #define LOG_DEBUG 1
