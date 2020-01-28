@@ -3,7 +3,13 @@
 #define LOG_PROGRESS_MSG(x) if(LOG_PROGRESS) { std::cout << x; }
 #define LOG_DEBUG_MSG(x) if(LOG_DEBUG) { std::cout << x << '\n'; }
 
+// Extra column for counting agents in population that meet certain criterion
+#ifdef AGENTCONDITION
 #define LOG_GENERATION_BUFFER (PHENSIZE + 1)
+#else
+#define LOG_GENERATION_BUFFER (PHENSIZE)
+#endif
+
 #define LOG_LOD_BUFFER (GENSIZE * PHENSIZE + GENSIZE + PHENSIZE)
 #define OUTBUFFERSIZE ((GENERATIONS + 1) * (LOG_GENERATION_BUFFER + LOG_LOD_BUFFER))
 
@@ -24,8 +30,10 @@ void do_simulations(const size_t amount) {
         // Population average
         buffer_ptr = std::copy(begin(avg), end(avg), buffer_ptr);
 
+#ifdef AGENTCONDITION
         // Amount of agents that have strategy 1/3 1/3 1/3
         *(buffer_ptr++) = world.count_agent_if([](auto agent) { return AGENTCONDITION ; });
+#endif
 
         // leave space for LOD
         buffer_ptr += LOG_LOD_BUFFER;
@@ -111,10 +119,24 @@ void parse_args(int argc, char** argv, std::string& filename, size_t& rounds) {
                 exit(1);
             }
             filename = std::string(argv[i]);
-        
+            
+
+        } else if(strcmp(argv[i], "-s")) {
+            if(++i == argc) {
+                std::cerr << "Missing integer value for -s argument (seed)\n";
+                exit(1);
+            }
+            int seed = std::atoi(argv[i]);
+            if(seed < 0) {
+                std::cerr << "Argument for -s (seed) has to be positive (got " << seed << ")\n";
+                exit(1);
+            }
+            rw::set_seed(static_cast<std::mt19937::result_type>(seed));
+
         } else if(strcmp(argv[i], "-h") == 0) {
             std::cout << "Usage: " << argv[0] << " [-r <# of rounds>] [-f <filename>]\n\n";
             std::cout << "\t-r\tHow often should this simulation be run\n";
+            std::cout << "\t-s\tSeed for random generator (integer)\n";
             std::cout << "\t-f\tWhere should the results be saved\n\t\tDuplicate filenames automatically get incremented\n\n";
             exit(0);
 
@@ -145,8 +167,9 @@ void log_info(std::string outfile, size_t rounds) {
     std::cout << "Payoff matrix  : " << world.get_payoff() << "\n";
     std::cout << "Output file    : " << outfile << "\n";
     std::cout << "Rounds         : " << rounds << "\n";
-}
 
+    std::cout << "Seed           : " << rw::get_seed() << "\n";
+}
 
 template<typename TDuration>
 std::string format_time(TDuration duration, size_t rounds) {
@@ -325,7 +348,7 @@ int main(int argc, char** argv) {
             std::cout << "Press enter to continue...";
             getchar();
         }
-        binary_file.write(reinterpret_cast<char *>(outbuffer), std::distance(outbuffer, out_ptr) * sizeof(double));
+        binary_file.write(reinterpret_cast<char *>(outbuffer), std::distance(outbuffer, out_ptr) * static_cast<long>(sizeof(double)));
         binary_file.close();
     }
     auto end = std::chrono::steady_clock::now();
@@ -344,8 +367,10 @@ int main(int argc, char** argv) {
     auto header_it = header.begin();
     for (size_t i = 0; i < PHENSIZE; ++i)
         *(header_it++) = "phenotype_" + std::to_string(i);
-    
-    *(header_it++) = "mixed";
+
+#ifdef AGENTCONDITION
+    *(header_it++) = "agentcondition";
+#endif
 
     for(size_t i = 0; i < GENSIZE; ++i)
         *(header_it++) = "LOD_gensize_" + std::to_string(i);
@@ -380,50 +405,4 @@ int main(int argc, char** argv) {
     LOG_DEBUG_MSG("Deleting binary files");
     for(auto f : filenames)
         remove(f.c_str());
-    // std::vector<Agent<GENSIZE, PHENSIZE> *>
-    //     agent_vec;
-    // auto current = &world[0];
-
-    // while (current != nullptr)
-    // {
-    //     agent_vec.push_back(current);
-    //     current = current->get_ancestor();
-    // }
-
-
-    // FileAgent file(name, ';');
-    // std::ifstream generation_file(name + ".tmp");
-
-    // file << "generation";
-    // // printing header
-    // for(size_t i = 0; i < PHENSIZE; ++i) {
-    //     file << "phenotype_" + std::to_string(i);
-    // }
-    // file << "mixedstrat";
-
-    // for(size_t i = 0; i < GENSIZE; ++i) {
-    //     file << "LOD_gensize_" + std::to_string(i);
-    // }
-
-    // for(size_t i = 0; i < PHENSIZE; ++i) {
-    //     file << "LOD_phensize_" + std::to_string(i);
-    // }
-
-    // for(size_t y = 0; y < world[0].get_matrix().height(); ++y) {
-    //     for(size_t x = 0; x < world[0].get_matrix().width(); ++x) {
-    //         file << "m_" + std::to_string(x) + "_" + std::to_string(y);
-    //     }
-    // }
-
-    // file.linebreak();
-
-    // std::string line;
-    // for(auto it = agent_vec.rbegin(); it != agent_vec.rend(); ++it) {
-    //     std::getline(generation_file, line);
-    //     file.add_string(line);
-    //     file << **it;
-    // }
-
-    // generation_file.close();
-    // remove((name + ".tmp").c_str());
 }

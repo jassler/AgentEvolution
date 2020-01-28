@@ -12,5 +12,6 @@ namespace rw {
     int rand_int(int low, int high);
     
     void set_seed(std::mt19937::result_type seed);
-    std::mt19937 get_mt();
+    std::mt19937::result_type get_seed();
+    std::mt19937& get_mt();
 }

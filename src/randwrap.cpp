@@ -7,15 +7,18 @@
 //
 
 #include "randwrap.hpp"
+#include "defines.hpp"
 #include <map>
 
 namespace rw {
     
     namespace {
         std::random_device dev;
-        std::mt19937 rng(dev());
+
+        std::mt19937::result_type seed_used = dev();
+        std::mt19937 rng(seed_used);
         std::uniform_real_distribution<> unit_interval(0, 1);
-        
+
         // generate every low-/high-distribution once
         std::map<std::tuple<int, int>, std::uniform_int_distribution<>> dist_map;
     }
@@ -46,11 +49,16 @@ namespace rw {
         return dist_it->second(rng);
     }
     
-    std::mt19937 get_mt() {
+    std::mt19937& get_mt() {
         return rng;
     }
     
     void set_seed(std::mt19937::result_type seed) {
-        rng = std::mt19937(seed);
+        seed_used = seed;
+        rng.seed(seed);
+    }
+
+    std::mt19937::result_type get_seed() {
+        return seed_used;
     }
 };

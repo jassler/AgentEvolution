@@ -25,35 +25,23 @@ private:
     size_t generation = 0;
 
     // random device to select offspring-worthy parents
-    std::mt19937 rng;
+    std::mt19937 rng = rw::get_mt();
 
     // randomly selected players
     std::uniform_int_distribution<size_t> dist_players;
-
-    unsigned int get_rand_device_number() {
-        std::random_device dev;
-        return dev();
-    }
 
 public:
 
     // Random number generator
     World(Agent<TGensize, TPhensize> default_agent, Matrix<TPhensize, TPhensize> payoff_matrix)
-    : payoff(payoff_matrix), rng(get_rand_device_number()), dist_players(0, TPopsize - 1) {
-        start_population.fill(Agent(default_agent));
-
-        reset_population();
-    }
-
-    World(Agent<TGensize, TPhensize> default_agent, Matrix<TPhensize, TPhensize> payoff_matrix, std::mt19937 number_generator)
-    : payoff(payoff_matrix), rng(number_generator), dist_players(0, TPopsize - 1) {
+    : payoff(payoff_matrix), dist_players(0, TPopsize - 1) {
         start_population.fill(Agent(default_agent));
 
         reset_population();
     }
 
     World(std::initializer_list<Agent<TGensize, TPhensize>> default_agents, Matrix<TPhensize, TPhensize> payoff_matrix)
-    : payoff(payoff_matrix), rng(get_rand_device_number()), dist_players(0, TPopsize - 1) {
+    : payoff(payoff_matrix), dist_players(0, TPopsize - 1) {
 
         auto type_amount = default_agents.size();
         auto it = begin(start_population);
@@ -195,4 +183,8 @@ public:
             [](auto& v){ v /= TPopsize; }
         );
     }
+
+    constexpr size_t getPopsize() const noexcept { return TPopsize; }
+    constexpr size_t getGensize() const noexcept { return TGensize; }
+    constexpr size_t getPhensize() const noexcept { return TPhensize; }
 };
