@@ -20,14 +20,14 @@ MATRIX_PROB=0
 LOG_DEBUG=0
 LOG_PROGRESS=0
 
-DEFINES=-DPOPULATION=$(POPULATION) -DGENSIZE=$(GENSIZE) -DPHENSIZE=$(PHENSIZE) -DPAYOFF=$(PAYOFF) -DAGENTSTART=$(AGENTSTART) -DGENOME_PROB=$(GENOME_PROB) -DMATRIX_PROB=$(MATRIX_PROB) -DGENERATIONS=$(GENERATIONS) -DLOG_DEBUG=$(LOG_DEBUG) -DLOG_PROGRESS=$(LOG_PROGRESS) -DLOG_GENERATION=$(LOG_GENERATION)
+DEFINES=-DPOPULATION=$(POPULATION) -DGENSIZE=$(GENSIZE) -DPHENSIZE=$(PHENSIZE) -DPAYOFF=$(PAYOFF) -DAGENTSTART=$(AGENTSTART) -DGENOME_PROB=$(GENOME_PROB) -DMATRIX_PROB=$(MATRIX_PROB) -DGENERATIONS=$(GENERATIONS) -DLOG_DEBUG=$(LOG_DEBUG) -DLOG_PROGRESS=$(LOG_PROGRESS)
 
 _OBJS = main.o agent.o matrix.o matrixexception.o randwrap.o world.o fileagent.o
 OBJS = $(patsubst %,$(OBJDIR)/%,$(_OBJS))
 
 # main output
 $(OFILE): $(OBJS)
-	$(CC) -o $(OFILE) $(CFLAGS) $(OBJS) $(DEFINES) -Wl,-stack_size,0x100000000
+	$(CC) -o $(OFILE) $(CFLAGS) $(OBJS) $(DEFINES)
 
 # all object files only depend on their corresponding .cpp-files
 # mostly gotten from here: https://stackoverflow.com/questions/1814270
@@ -51,3 +51,7 @@ test:
 .PHONY: clean
 clean:
 	rm -f $(OFILE) $(OBJDIR)/*.o
+
+.PHONY: cleanall
+cleanall:
+	rm -rf $(ODIR)/*
