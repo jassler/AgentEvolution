@@ -30,6 +30,11 @@
 #endif
 #define GENERATIONS_STR QUOTE(GENERATIONS)
 
+#ifndef OPPONENTS
+#define OPPONENTS 8
+#endif
+#define OPPONENTS_STR QUOTE(OPPONENTS)
+
 #ifndef GENOME_PROB
 #define GENOME_PROB 0.0001
 #endif
