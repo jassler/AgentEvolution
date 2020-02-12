@@ -8,6 +8,7 @@
 #include "prettyprint.hpp"
 #include <iostream>
 #include <initializer_list>
+#include <filesystem>
 #include <algorithm>
 #include <sstream>
 #include <chrono>
