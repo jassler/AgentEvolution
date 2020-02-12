@@ -366,10 +366,10 @@ int main(int argc, char** argv) {
 #endif
 
     for(size_t i = 0; i < GENSIZE; ++i)
-        *(header_it++) = "LOD_gensize_" + std::to_string(i);
+        *(header_it++) = "LOD_genome_" + std::to_string(i);
 
     for(size_t i = 0; i < PHENSIZE; ++i)
-        *(header_it++) = "LOD_phensize_" + std::to_string(i);
+        *(header_it++) = "LOD_phenotype_" + std::to_string(i);
 
     for(size_t y = 0; y < world[0].get_matrix().height(); ++y) {
         for(size_t x = 0; x < world[0].get_matrix().width(); ++x) {
@@ -379,7 +379,7 @@ int main(int argc, char** argv) {
 
     LOG_DEBUG_MSG("Header is " << pp::join(header, ','));
     if (header_it != header.end()) {
-        std::cerr << "Somehow header_it doesn't point to end (" << header_it << " != " << header.end() << "). Continue?\n";
+        std::cerr << "Somehow header_it doesn't point to end (" << std::distance(header.begin(), header_it) << " != " << std::distance(header.begin(), header.end()) << "). Continue?\n";
         int c = getchar();
         if(!(c == 'y' || c == 'Y' || c == 'j' || c == 'J'))
             exit(2);
@@ -395,7 +395,7 @@ int main(int argc, char** argv) {
     for (auto f : filenames)
         binaryfile_to_csv(f, f.replace(f.end() - 4, f.end(), ".csv"), header, ';');
 
-    LOG_DEBUG_MSG("Deleting binary files");
-    for(auto f : filenames)
-        remove(f.c_str());
+    //LOG_DEBUG_MSG("Deleting binary files");
+    //for(auto f : filenames)
+    //    remove(f.c_str());
 }
