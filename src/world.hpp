@@ -128,6 +128,7 @@ public:
 
         static std::array<double, TPopsize> accumulated_score;
 
+        ancestors.fill(nullptr);
         double max = 0;
 
         // initialize accumulated_score
@@ -139,8 +140,6 @@ public:
                 accumulated = max = pop_it->get_score() + max + offset;
                 ++pop_it;
             }
-
-            std::cout << accumulated_score << "\n";
         }
         std::uniform_real_distribution<double> dist_threshold(0.0, max);
 
@@ -150,8 +149,6 @@ public:
             auto it = std::lower_bound(accumulated_score.begin(), accumulated_score.end(), lucky_score);
             size_t index = static_cast<size_t>(std::distance(accumulated_score.begin(), it));
 
-            std::cout << lucky_score << ", index " << index << ", max = " << max << "\n";
-            getchar();
             // is it the first time this guy gets to produce offspring?
             if(ancestors[index] == nullptr)
                 ancestors[index] = new Agent(population[index]);
@@ -173,18 +170,6 @@ public:
 
         ++generation;
         population = new_population;
-
-        if(LOG_DEBUG) {
-            std::cout << std::count_if(begin(ancestors), end(ancestors), [](auto a1) { return a1 == nullptr; }) << " / " << TPopsize << " died\n";
-            // std::cout
-            //     << "Example LOD: " << population[0];
-            // auto a = population[0].get_ancestor();
-            // while(a != nullptr) {
-            //     std::cout << " -> " << *a;
-            //     a = a->get_ancestor();
-            // }
-            // std::cout << std::endl;
-        }
 #else
         static std::array<Agent<TGensize, TPhensize>*, TPopsize> ancestors;
         static std::array<Agent<TGensize, TPhensize>, TPopsize> new_population;
