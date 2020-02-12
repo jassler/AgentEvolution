@@ -13,10 +13,8 @@
 namespace rw {
     
     namespace {
-        std::random_device dev;
-
-        std::mt19937::result_type seed_used = dev();
-        std::mt19937 rng(seed_used);
+        std::mt19937::result_type seed_used = 101;
+        std::mt19937 rng(101);
         std::uniform_real_distribution<> unit_interval(0, 1);
 
         // generate every low-/high-distribution once
