@@ -44,7 +44,7 @@ void binaryfile_to_csv(std::string filename, std::string resultfilename, std::ar
         if(!infile.read(reinterpret_cast<char *>(&d), sizeof(double)))
             break;
 
-        out << d;
+        out << std::fixed << d;
         if(--columns_left)
             out << sep;
         else {

@@ -13,16 +13,19 @@
 #define LOG_LOD_BUFFER (GENSIZE * PHENSIZE + GENSIZE + PHENSIZE)
 #define OUTBUFFERSIZE ((GENERATIONS + 1) * (LOG_GENERATION_BUFFER + LOG_LOD_BUFFER))
 
-World<POPULATION, GENSIZE, PHENSIZE> world({AGENTSTART}, PAYOFF);
+World<POPULATION, GENSIZE, PHENSIZE, OPPONENTS> world({AGENTSTART}, PAYOFF);
 double outbuffer[OUTBUFFERSIZE];
 std::array<Agent<GENSIZE, PHENSIZE> *, GENERATIONS+1> lod_vector;
 
 // skip specifies how many cells the main function wants to utilise (for LOD logging)
 void do_simulations(const size_t amount) {
 
+    LOG_DEBUG_MSG("Initializing basic parameters (avg, buffer_ptr, end_ptr)");
     std::array<double, PHENSIZE> avg;
     double *buffer_ptr = outbuffer;
     double *end_ptr = outbuffer + OUTBUFFERSIZE;
+
+    LOG_DEBUG_MSG("buffer_ptr = " << buffer_ptr << ", end_ptr = buffer_ptr + " << OUTBUFFERSIZE << " = " << end_ptr);
 
     auto log_generation = [&]() {
         world.calculate_average_phenotype(avg);
@@ -45,7 +48,10 @@ void do_simulations(const size_t amount) {
         world.simulate_generation();
         log_generation();
 
-        LOG_PROGRESS_MSG("\r" << i << " / " << amount << " (" << i * 100 / amount << "%)");
+        if(LOG_PROGRESS) {
+            if((i+1) * 100 / amount != (i * 100 / amount))
+                std::cout << "\r" << (i+1) << " / " << amount << " (" << (i+1) * 100 / amount << "%)" << std::flush;
+        }
     }
 
     if(buffer_ptr != end_ptr) {
@@ -100,6 +106,8 @@ void parse_args(int argc, char** argv, std::string& filename, size_t& rounds) {
     filename = generate_filename();
     rounds = 1;
 
+    bool seed_set = false;
+
     for (int i = 1; i < argc; ++i) {
         if (strcmp(argv[i], "-r") == 0) {
             if(++i == argc) {
@@ -121,7 +129,7 @@ void parse_args(int argc, char** argv, std::string& filename, size_t& rounds) {
             filename = std::string(argv[i]);
             
 
-        } else if(strcmp(argv[i], "-s")) {
+        } else if(strcmp(argv[i], "-s") == 0) {
             if(++i == argc) {
                 std::cerr << "Missing integer value for -s argument (seed)\n";
                 exit(1);
@@ -132,7 +140,7 @@ void parse_args(int argc, char** argv, std::string& filename, size_t& rounds) {
                 exit(1);
             }
             rw::set_seed(static_cast<std::mt19937::result_type>(seed));
-
+            seed_set = true;
         } else if(strcmp(argv[i], "-h") == 0) {
             std::cout << "Usage: " << argv[0] << " [-r <# of rounds>] [-f <filename>]\n\n";
             std::cout << "\t-r\tHow often should this simulation be run\n";
@@ -143,6 +151,10 @@ void parse_args(int argc, char** argv, std::string& filename, size_t& rounds) {
         }
     }
 
+    if(!seed_set) {
+        rw::set_seed(std::random_device()());
+    }
+
     if(filename.size() >= 4 && filename.substr(filename.size() - 4) == ".csv") {
         filename = filename.substr(0, filename.size() - 4);
         std::cout << "Warning: Filename argument (-f) ended with .csv, it is removed to allow counting (will add .csv in the end)";
@@ -150,45 +162,25 @@ void parse_args(int argc, char** argv, std::string& filename, size_t& rounds) {
 }
 
 void log_info(std::string outfile, size_t rounds) {
-    std::cout << "Population size: " POPULATION_STR "\n";
-    std::cout << "Genome size    : " GENSIZE_STR "\n";
-    std::cout << "Phenotype size : " PHENSIZE_STR "\n";
+    std::cout <<"Population size: " POPULATION_STR "\n"
+                "Genome size    : " GENSIZE_STR "\n"
+                "Phenotype size : " PHENSIZE_STR "\n"
 
-    std::cout << "Genome mutation: " GENOME_PROB_STR "\n";
-    std::cout << "Matrix mutation: " MATRIX_PROB_STR "\n";
-    std::cout << "Generations    : " GENERATIONS_STR "\n";
+                "Genome mutation: " GENOME_PROB_STR "\n"
+                "Matrix mutation: " MATRIX_PROB_STR "\n"
+                "Generations    : " GENERATIONS_STR "\n"
+                "Opponents      : " OPPONENTS_STR "\n";
 
     std::array<double, PHENSIZE> avgs;
     world.calculate_average_phenotype(avgs);
     // std::cout << "Agent start    : ";
     // operator<<(std::cout, AGENTSTART);
     // std::cout << '\n';
-    std::cout << "Avg start      : " << avgs << "\n";
-    std::cout << "Payoff matrix  : " << world.get_payoff() << "\n";
-    std::cout << "Output file    : " << outfile << "\n";
-    std::cout << "Rounds         : " << rounds << "\n";
-
-    std::cout << "Seed           : " << rw::get_seed() << "\n";
-}
-
-template<typename TDuration>
-std::string format_time(TDuration duration, size_t rounds) {
-    std::stringstream s;
-
-    s << "\nTime elapsed: " << std::setfill('0') << std::setw(2)
-            << duration / 1000 / 60 / 60 << ':' << std::setfill('0') << std::setw(2)
-            << duration / 1000 / 60 % 60 << ':' << std::setfill('0') << std::setw(2)
-            << duration / 1000 % 60 << '.'
-            << duration % 1000 << '\n';
-
-    auto each = duration / static_cast<long long>(rounds);
-    s << "For each of the " << rounds << " rounds it averages to " << std::setfill('0') << std::setw(2)
-            << each / 1000 / 60 / 60 << ':' << std::setfill('0') << std::setw(2)
-            << each / 1000 / 60 % 60 << ':' << std::setfill('0') << std::setw(2)
-            << each / 1000 % 60 << '.'
-            << each % 1000 << " per round\n";
-
-    return s.str();
+    std::cout <<"Avg start      : " << avgs << "\n"
+                "Payoff matrix  : " << world.get_payoff() << "\n"
+                "Output file    : " << outfile << "\n"
+                "Rounds         : " << rounds << "\n"
+                "Seed           : " << rw::get_seed() << "\n";
 }
 
 /*
@@ -232,7 +224,7 @@ void calculate_averages(std::vector<std::string> filenames, std::string outfilen
             sum += x;
         }
 
-        result_file << sum / divisor;
+        result_file << std::fixed << sum / divisor;
 
         // determine if new line or separator is printed
         if(--columns_left) {
@@ -280,8 +272,10 @@ int main(int argc, char** argv) {
     LOG_DEBUG_MSG("Starting simulation");
     while (rounds--) {
         LOG_PROGRESS_MSG('\n' << rounds + 1 << ((rounds == 0) ? " round" : " rounds") << " left\n");
-        LOG_PROGRESS_MSG("Resetting world");
+        LOG_PROGRESS_MSG("Resetting world\n");
         world.reset_population();
+
+        LOG_PROGRESS_MSG("Starting simulations\n");
 
         // Simulation
         do_simulations(GENERATIONS);
@@ -292,8 +286,7 @@ int main(int argc, char** argv) {
         auto current = &world[0]; //world.get_best_agent();
         LOG_DEBUG_MSG("Best agent: " << *current);
 
-        while (current != nullptr)
-        {
+        while (current != nullptr) {
             *(lod_it++) = current;
             current = current->get_ancestor();
         }

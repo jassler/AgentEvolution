@@ -7,9 +7,9 @@
 #include "defines.hpp"
 #include "prettyprint.hpp"
 #include <iostream>
+#include <initializer_list>
 #include <algorithm>
 #include <sstream>
-#include <iomanip>
 #include <chrono>
 #include <vector>
 #include <locale>
