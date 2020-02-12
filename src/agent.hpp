@@ -3,6 +3,7 @@
 #include "matrix.hpp"
 #include "randwrap.hpp"
 #include "defines.hpp"
+#include "prettyprint.hpp"
 #include <numeric>
 
 #include <iostream>
@@ -68,14 +69,14 @@ public:
     constexpr bool operator> (const Agent& other) const noexcept { return score > other.score; }
     constexpr bool operator<=(const Agent& other) const noexcept { return score <= other.score; }
     constexpr bool operator>=(const Agent& other) const noexcept { return score >= other.score; }
-
+    constexpr bool operator==(const Agent& other) const noexcept { return score == other.score; }
 
     friend std::ostream& operator<<(std::ostream& os, Agent a) {
-        os << "Agent {\n"
-            << "\tgenome   : "; for(auto n : a.get_genome()) os << n << ", "; os << "\n"
-            << "\tphenotype: "; for(auto n : a.get_phenotype()) os << n << ", "; os << "\n"
-            << "}";
-        
+        os  << "Agent {"
+            << "g = " << a.get_genome()
+            << ", m = " << a.get_matrix()
+            << ", p = " << a.get_phenotype() << "}";
+
         return os;
     }
 };
