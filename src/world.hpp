@@ -14,7 +14,7 @@ void operator+=(std::array<double, S>& a, const std::array<double, S> b) {
     }
 }
 
-template<size_t TPopsize, size_t TGensize, size_t TPhensize>
+template<size_t TPopsize, size_t TGensize, size_t TPhensize, size_t TOpponents = 8>
 class World {
 private:
 
@@ -23,9 +23,6 @@ private:
     Matrix<TPhensize, TPhensize> payoff;
 
     size_t generation = 0;
-
-    // random device to select offspring-worthy parents
-    std::mt19937 rng = rw::get_mt();
 
     // randomly selected players
     std::uniform_int_distribution<size_t> dist_players;
@@ -66,11 +63,37 @@ public:
                 a.get_ancestor()->child_died();
             }
             generation = 0;
+
+        } else if(LOG_DEBUG) {
+            // first round (probably), show initialized agents
+            std::cout << "{\n";
+            auto prev = start_population[0].get_phenotype();
+            const size_t max = 3;
+            size_t count = max;
+
+            for (size_t i = 0; i < TPopsize; ++i)
+            {
+                if(start_population[i].get_phenotype() != prev)
+                    count = max;
+                
+                if(count > 0 || i >= TPopsize - max) {
+                    std::cout << "\t[" << i << "] " << start_population[i] << "\n";
+                    
+                    if(--count == 0 && i < TPopsize - max - 1)
+                        std::cout << "\t...\n";
+                }
+                
+                prev = start_population[i].get_phenotype();
+            }
+            std::cout << "}\n";
         }
         population = start_population;
+        if(LOG_DEBUG) {
+            std::cout << "Reset population\n";
+        }
     }
 
-    void simulate_games(size_t opponents = 8) {
+    void simulate_games() {
 
         // each player has actually twice the amount of opponents
         // because they are to the left and right
@@ -79,7 +102,9 @@ public:
             // opponents to the right of player
             auto opponent = player;
 
-            for(size_t n = 0; n < opponents; ++n) {
+            for(size_t n = 0; n < TOpponents; ++n) {
+                // ignoring if player plays against himself
+                // since in 0-dimensions this affects everyone evenly
                 if(++opponent == end(population))
                     opponent = begin(population);
                 
@@ -96,6 +121,71 @@ public:
      * Create new population
      */
     void next_generation() {
+#define DO_SORT_WAY
+#ifdef DO_SORT_WAY
+        static std::array<Agent<TGensize, TPhensize>*, TPopsize> ancestors;
+        static std::array<Agent<TGensize, TPhensize>, TPopsize> new_population;
+
+        static std::array<double, TPopsize> accumulated_score;
+
+        double max = 0;
+
+        // initialize accumulated_score
+        {
+            double offset = -std::min_element(begin(population), end(population))->get_score();
+            auto pop_it = begin(population);
+
+            for(auto& accumulated : accumulated_score) {
+                accumulated = max = pop_it->get_score() + max + offset;
+                ++pop_it;
+            }
+
+            std::cout << accumulated_score << "\n";
+        }
+        std::uniform_real_distribution<double> dist_threshold(0.0, max);
+
+        for(auto& child : new_population) {
+            double lucky_score = dist_threshold(rw::get_mt());
+
+            auto it = std::lower_bound(accumulated_score.begin(), accumulated_score.end(), lucky_score);
+            size_t index = static_cast<size_t>(std::distance(accumulated_score.begin(), it));
+
+            std::cout << lucky_score << ", index " << index << ", max = " << max << "\n";
+            getchar();
+            // is it the first time this guy gets to produce offspring?
+            if(ancestors[index] == nullptr)
+                ancestors[index] = new Agent(population[index]);
+
+            // produce offspring!
+            child = ancestors[index]->make_offspring();
+        }
+
+        // garbage collection
+        // notify all childless parents that they were unworthy
+        if(generation > 0)
+        {
+            for (size_t i = 0; i < TPopsize; ++i)
+            {
+                if(ancestors[i] == nullptr)
+                    population[i].get_ancestor()->child_died();
+            }
+        }
+
+        ++generation;
+        population = new_population;
+
+        if(LOG_DEBUG) {
+            std::cout << std::count_if(begin(ancestors), end(ancestors), [](auto a1) { return a1 == nullptr; }) << " / " << TPopsize << " died\n";
+            // std::cout
+            //     << "Example LOD: " << population[0];
+            // auto a = population[0].get_ancestor();
+            // while(a != nullptr) {
+            //     std::cout << " -> " << *a;
+            //     a = a->get_ancestor();
+            // }
+            // std::cout << std::endl;
+        }
+#else
         static std::array<Agent<TGensize, TPhensize>*, TPopsize> ancestors;
         static std::array<Agent<TGensize, TPhensize>, TPopsize> new_population;
 
@@ -123,8 +213,8 @@ public:
 
             // find player who exceeds threshold
             do {
-                rand_agent = dist_players(rng);
-                threshold = dist_threshold(rng);
+                rand_agent = dist_players(rw::get_mt());
+                threshold = dist_threshold(rw::get_mt());
             } while((population[rand_agent].get_score() + offset) < threshold);
 
             // is it the first time this guy gets to produce offspring?
@@ -148,23 +238,13 @@ public:
 
         ++generation;
         population = new_population;
+#endif
     }
 
-    void simulate_generation(size_t opponents = 8) {
-        simulate_games(opponents);
+    void simulate_generation() {
+        simulate_games();
         next_generation();
     }
-
-    auto get_generation() const noexcept { return generation; }
-    auto get_payoff() const noexcept { return payoff; }
-    Agent<TGensize, TPhensize>* get_best_agent() noexcept { return std::max(begin(population), end(population)); }
-
-    template <class TPredicate>
-    inline auto count_agent_if(TPredicate predicate) const noexcept {
-        return std::count_if(begin(population), end(population), predicate);
-    }
-    
-    auto &operator[](size_t i) { return population.at(i); }
 
     void calculate_average_phenotype(std::array<double, TPhensize>& result) {
         result.fill(0);
@@ -184,7 +264,18 @@ public:
         );
     }
 
+    template <class TPredicate>
+    inline auto count_agent_if(TPredicate predicate) const noexcept {
+        return std::count_if(begin(population), end(population), predicate);
+    }
+
+    auto get_generation() const noexcept { return generation; }
+    auto get_payoff() const noexcept { return payoff; }
+    auto get_best_agent() noexcept { return std::max(begin(population), end(population)); }
+    
+    auto &operator[](size_t i) { return population.at(i); }
     constexpr size_t getPopsize() const noexcept { return TPopsize; }
     constexpr size_t getGensize() const noexcept { return TGensize; }
     constexpr size_t getPhensize() const noexcept { return TPhensize; }
+    constexpr auto getPopulation() const noexcept { return population; }
 };
