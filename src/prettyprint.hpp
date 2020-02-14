@@ -30,6 +30,7 @@ std::ostream& operator<<(std::ostream& os, const std::initializer_list<T> list) 
             os << ", " << *it ;
         os << " }";
     }
+    return os;
 }
 
 template<typename TDuration>

@@ -188,14 +188,14 @@ void Agent<TGensize, TPhensize>::normalize() {
     double sum = std::accumulate(begin(phenotype), end(phenotype), 0.0);
     double offset = *std::min(begin(phenotype), end(phenotype));
     if(offset < 0)
-        sum += -offset * phenotype.size();
+        sum += -offset * static_cast<double>(phenotype.size());
     else
         offset = 0;
     
     // if sum is zero, then all indeces must be zero (extremely unlikely, but who knows)
     // -> set random index to 1
     if(sum == 0) {
-        double value = 1.0 / phenotype.size();
+        double value = 1.0 / static_cast<double>(phenotype.size());
         for(auto& p : phenotype)
             p = value;
     } else {

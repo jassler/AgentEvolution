@@ -59,4 +59,4 @@ namespace rw {
     std::mt19937::result_type get_seed() {
         return seed_used;
     }
-};
+}
