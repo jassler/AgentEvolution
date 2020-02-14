@@ -50,5 +50,3 @@ if __name__ == "__main__":
     pool = ThreadPool(8)
     print(executables)
     pool.map(call_subprocess, executables)
-    
-    print('done')
