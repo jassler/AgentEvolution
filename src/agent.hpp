@@ -5,6 +5,7 @@
 #include "defines.hpp"
 #include "prettyprint.hpp"
 #include <numeric>
+#include <initializer_list>
 
 #include <iostream>
 
