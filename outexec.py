@@ -1,10 +1,12 @@
 import subprocess
+import argparse
 import threading
 from multiprocessing import Pool
 from multiprocessing.dummy import Pool as ThreadPool
 import termcolor
 import os
 
+# default, call this file with -h to see how to change those values
 folder = 'results/csvs'
 runs = 40
 
@@ -35,6 +37,16 @@ def call_subprocess(executable: str):
         print(termcolor.colored('{} / {} ({:.2f}%) finished'.format(exec_count, exec_total, float(exec_count * 100) / exec_total), 'green', attrs=['bold']) + ' - finished {}'.format(executable))
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-r', '--runs', dest='runs', type=int, help='Number of runs (replicates)')
+    parser.add_argument('-f', '--folder', dest='folder', type=str, help='Output folder')
+    args = parser.parse_args()
+
+    if args.folder is not None:
+        folder = args.folder
+    if args.runs is not None:
+        runs = args.runs
+
     def isExec(filename):
         return filename.endswith(".out")
     
