@@ -18,6 +18,6 @@
 #include <locale>
 #include <string.h>
 
-void calculate_averages(std::vector<std::string> filenames, std::string outfilename, std::initializer_list<std::string> headers, char sep = ';');
+std::vector<std::string> generate_headernames();
 
 #endif
