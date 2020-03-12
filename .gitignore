@@ -10,3 +10,5 @@ bin/
 tests/googletest
 
 *.txt
+*.zip
+*.pptx
