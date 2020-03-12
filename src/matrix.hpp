@@ -73,9 +73,25 @@ Matrix<H,W,T>::Matrix() {
     for(auto& row : m)
         row.fill(0);
     
-    // diagonal 1
-    for(size_t i = 0; i < ((W < H) ? W : H); ++i)
-        m[i][i] = 1;
+    if constexpr(H == W) {
+        // diagonal 1
+        for(size_t i = 0; i < W; ++i)
+            m[i][i] = 1;
+    } else if(H > W) {
+        // ehm... do something
+        double fill_with = 1.0 / static_cast<double>(std::max(W, H)) * static_cast<double>(std::min(W, H));
+        for (size_t y = 0; y < H; ++y) {
+            size_t x = y * W / H;
+            m[y][x] = fill_with;
+        }
+    } else {
+        // ehm... do the other thing
+        double fill_with = 1.0 / static_cast<double>(std::max(W, H)) * static_cast<double>(std::min(W, H));
+        for (size_t x = 0; x < W; ++x) {
+            size_t y = x * H / W;
+            m[y][x] = fill_with;
+        }
+    }
 }
 
 // copy constructor
