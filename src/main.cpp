@@ -34,7 +34,8 @@ void do_simulations(const size_t amount) {
         buffer_ptr = std::copy(begin(avg), end(avg), buffer_ptr);
 
 #ifdef AGENTCONDITION
-        // Amount of agents that have strategy 1/3 1/3 1/3
+        // Counting number of agents that have certain criterium (eg. strategy
+        // is 1/3 1/3 1/3)
         *(buffer_ptr++) = world.count_agent_if([](auto agent) { return AGENTCONDITION ; });
 #endif
 
@@ -141,13 +142,22 @@ void parse_args(int argc, char** argv, std::string& filename, size_t& rounds) {
             }
             rw::set_seed(static_cast<std::mt19937::result_type>(seed));
             seed_set = true;
-        } else if(strcmp(argv[i], "-h") == 0) {
+
+        } else if(strcmp(argv[i], "-avg") == 0) {
+
+            std::cout << "Interactive avg calculator\n";
+
+            FileAgent::prompt_interactive_avg_creator(generate_headernames());
+            exit(0);
+        }
+        else if (strcmp(argv[i], "-h") == 0)
+        {
             std::cout << "Usage: " << argv[0] << " [-r <# of rounds>] [-f <filename>]\n\n";
             std::cout << "\t-r\tHow often should this simulation be run\n";
             std::cout << "\t-s\tSeed for random generator (integer)\n";
-            std::cout << "\t-f\tWhere should the results be saved\n\t\tDuplicate filenames automatically get incremented\n\n";
+            std::cout << "\t-f\tWhere should the results be saved\n\t\tDuplicate filenames automatically get incremented\n";
+            std::cout << "\t-avg\tCalculate average for binary files (interactive procedure)";
             exit(0);
-
         }
     }
 
@@ -183,61 +193,39 @@ void log_info(std::string outfile, size_t rounds) {
                 "Seed           : " << rw::get_seed() << "\n";
 }
 
-/*
- * Opens all files, calculates average, writes it into new file
- * Determines where to break lines by size of headers
- */
-void calculate_averages(std::vector<std::string> filenames, std::string outfilename, std::array<std::string, LOG_GENERATION_BUFFER + LOG_LOD_BUFFER> headers, char sep) {
-    
-    // final file with all the averages
-    std::ofstream result_file(outfilename);
-    result_file << pp::join(headers, sep) << '\n';
+std::vector<std::string> generate_headernames() {
+    LOG_DEBUG_MSG("Generating header");
+    std::vector<std::string> header;
+    header.resize(LOG_GENERATION_BUFFER + LOG_LOD_BUFFER);
+    auto header_it = header.begin();
+    for (size_t i = 0; i < PHENSIZE; ++i)
+        *(header_it++) = "phenotype_" + std::to_string(i);
 
-    // open all binary files
-    std::vector<std::ifstream> infiles;
-    infiles.reserve(filenames.size());
+#ifdef AGENTCONDITION
+    *(header_it++) = "agentcondition";
+#endif
 
-    for(auto& fn : filenames)
-        infiles.push_back(std::ifstream(fn, std::ios::in | std::ios::binary));
+    for(size_t i = 0; i < GENSIZE; ++i)
+        *(header_it++) = "LOD_genome_" + std::to_string(i);
 
-    // read single double from all files (each put into x)
-    // sum up, divide
-    double sum, x;
-    double divisor = static_cast<double>(infiles.size());
+    for(size_t i = 0; i < PHENSIZE; ++i)
+        *(header_it++) = "LOD_phenotype_" + std::to_string(i);
 
-    // when columns_left is 0, it starts a new line
-    size_t columns_left = headers.size();
-
-    while (true) {
-        
-        sum = 0.0;
-        for(auto& f : infiles) {
-            if(!f.read(reinterpret_cast<char *>(&x), sizeof(x))) {
-                if(&f != &infiles[0]) {
-                    std::cerr << "One of the files seem to have a different length\n";
-                }
-                // OH YEAH, I'M BADASS
-                // TRY ME!!
-                goto readloop_end;
-            }
-            
-            sum += x;
-        }
-
-        result_file << std::fixed << sum / divisor;
-
-        // determine if new line or separator is printed
-        if(--columns_left) {
-            result_file << sep;
-        } else {
-            columns_left = headers.size();
-            result_file << '\n';
+    for(size_t y = 0; y < world[0].get_matrix().height(); ++y) {
+        for(size_t x = 0; x < world[0].get_matrix().width(); ++x) {
+            *(header_it++) = "m_" + std::to_string(x) + "_" + std::to_string(y);
         }
     }
-    readloop_end:
 
-    for(auto& f : infiles)
-        f.close();
+    LOG_DEBUG_MSG("Header is " << pp::join(header, ','));
+    if (header_it != header.end()) {
+        std::cerr << "Somehow header_it doesn't point to end (" << std::distance(header.begin(), header_it) << " != " << std::distance(header.begin(), header.end()) << "). Continue?\n";
+        int c = getchar();
+        if(!(c == 'y' || c == 'Y' || c == 'j' || c == 'J'))
+            exit(2);
+    }
+
+    return header;
 }
 
 int main(int argc, char** argv) {
@@ -354,46 +342,17 @@ int main(int argc, char** argv) {
      * Calculate averages of all files
      */
     LOG_DEBUG_MSG("Creating average csv-file");
-
-    LOG_DEBUG_MSG("Generating header");
-    std::array<std::string, LOG_GENERATION_BUFFER + LOG_LOD_BUFFER> header;
-    auto header_it = header.begin();
-    for (size_t i = 0; i < PHENSIZE; ++i)
-        *(header_it++) = "phenotype_" + std::to_string(i);
-
-#ifdef AGENTCONDITION
-    *(header_it++) = "agentcondition";
-#endif
-
-    for(size_t i = 0; i < GENSIZE; ++i)
-        *(header_it++) = "LOD_genome_" + std::to_string(i);
-
-    for(size_t i = 0; i < PHENSIZE; ++i)
-        *(header_it++) = "LOD_phenotype_" + std::to_string(i);
-
-    for(size_t y = 0; y < world[0].get_matrix().height(); ++y) {
-        for(size_t x = 0; x < world[0].get_matrix().width(); ++x) {
-            *(header_it++) = "m_" + std::to_string(x) + "_" + std::to_string(y);
-        }
-    }
-
-    LOG_DEBUG_MSG("Header is " << pp::join(header, ','));
-    if (header_it != header.end()) {
-        std::cerr << "Somehow header_it doesn't point to end (" << std::distance(header.begin(), header_it) << " != " << std::distance(header.begin(), header.end()) << "). Continue?\n";
-        int c = getchar();
-        if(!(c == 'y' || c == 'Y' || c == 'j' || c == 'J'))
-            exit(2);
-    }
+    std::vector<std::string> header = generate_headernames();
 
     LOG_DEBUG_MSG("Calculating averages");
-    calculate_averages(filenames, base_filename + "_avg.csv", header, ';');
+    FileAgent::calculate_averages(filenames, base_filename + "_avg.csv", header, ';');
 
     /*
      * LOD
      */
     LOG_DEBUG_MSG("Turning all binary files into csvs");
     for (auto f : filenames)
-        binaryfile_to_csv(f, f.replace(f.end() - 4, f.end(), ".csv"), header, ';');
+        FileAgent::binaryfile_to_csv(f, f.replace(f.end() - 4, f.end(), ".csv"), header, ';');
 
     //LOG_DEBUG_MSG("Deleting binary files");
     //for(auto f : filenames)

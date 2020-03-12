@@ -24,21 +24,18 @@ private:
 
     size_t generation = 0;
 
-    // randomly selected players
-    std::uniform_int_distribution<size_t> dist_players;
-
 public:
 
     // Random number generator
     World(Agent<TGensize, TPhensize> default_agent, Matrix<TPhensize, TPhensize> payoff_matrix)
-    : payoff(payoff_matrix), dist_players(0, TPopsize - 1) {
+    : payoff(payoff_matrix) {
         start_population.fill(Agent(default_agent));
 
         reset_population();
     }
 
     World(std::initializer_list<Agent<TGensize, TPhensize>> default_agents, Matrix<TPhensize, TPhensize> payoff_matrix)
-    : payoff(payoff_matrix), dist_players(0, TPopsize - 1) {
+    : payoff(payoff_matrix) {
 
         auto type_amount = default_agents.size();
         auto it = begin(start_population);
@@ -121,11 +118,9 @@ public:
      * Create new population
      */
     void next_generation() {
-#define DO_SORT_WAY
-#ifdef DO_SORT_WAY
         static std::array<Agent<TGensize, TPhensize>*, TPopsize> ancestors;
         static std::array<Agent<TGensize, TPhensize>, TPopsize> new_population;
-
+#if 1
         static std::array<double, TPopsize> accumulated_score;
 
         ancestors.fill(nullptr);
@@ -134,6 +129,9 @@ public:
         // initialize accumulated_score
         {
             double offset = -std::min_element(begin(population), end(population))->get_score();
+            if(offset > 0)
+                offset = 0;
+            
             auto pop_it = begin(population);
 
             for(auto& accumulated : accumulated_score) {
@@ -156,74 +154,44 @@ public:
             // produce offspring!
             child = ancestors[index]->make_offspring();
         }
-
-        // garbage collection
-        // notify all childless parents that they were unworthy
-        if(generation > 0)
-        {
-            for (size_t i = 0; i < TPopsize; ++i)
-            {
-                if(ancestors[i] == nullptr)
-                    population[i].get_ancestor()->child_died();
-            }
-        }
-
-        ++generation;
-        population = new_population;
 #else
-        static std::array<Agent<TGensize, TPhensize>*, TPopsize> ancestors;
-        static std::array<Agent<TGensize, TPhensize>, TPopsize> new_population;
+        static std::uniform_int_distribution<size_t> index_chooser(0, TPopsize-1);
 
-        ancestors.fill(nullptr);
-
-        // min- and max-score
-        // min-score to be added to all scores as to avoid negative values
-        auto minmax = std::minmax_element(begin(population), end(population));
-        double offset = minmax.first->get_score();
-        double max = minmax.second->get_score();
-
-        // offset definitely negative, make it positive
-        // +1 'cause worst score can't be 0
-        offset = -offset + 1;
-        // for range of random numbers
-        max += offset;
-
-        // threshold for agents to exceed for them to create offspring
-        std::uniform_real_distribution<double> dist_threshold(0.0, max + 1);
+        auto [min_agent, max_agent] = std::minmax_element(begin(population), end(population));
+        std::uniform_real_distribution<double> dist_threshold(min_agent->get_score(), max_agent->get_score());
 
         for(auto& child : new_population) {
+            size_t index;
 
-            size_t rand_agent;
-            double threshold;
-
-            // find player who exceeds threshold
             do {
-                rand_agent = dist_players(rw::get_mt());
-                threshold = dist_threshold(rw::get_mt());
-            } while((population[rand_agent].get_score() + offset) < threshold);
+                index = index_chooser(rw::get_mt());
+            } while (population[index].get_score() < dist_threshold(rw::get_mt()));
 
             // is it the first time this guy gets to produce offspring?
-            if(ancestors[rand_agent] == nullptr)
-                ancestors[rand_agent] = new Agent(population[rand_agent]);
-            
-            // produce offspring!
-            child = ancestors[rand_agent]->make_offspring();
-        }
+            if(ancestors[index] == nullptr)
+                ancestors[index] = new Agent(population[index]);
 
+            // produce offspring!
+            child = ancestors[index]->make_offspring();
+        }
+#endif
+        
         // garbage collection
         // notify all childless parents that they were unworthy
         if(generation > 0)
         {
             for (size_t i = 0; i < TPopsize; ++i)
             {
-                if(ancestors[i] == nullptr)
+                if (ancestors[i] == nullptr) {
                     population[i].get_ancestor()->child_died();
+                }
             }
         }
+        // std::cout << collected << " died, " << TPopsize - collected << " reproduced\n";
+        // getchar();
 
         ++generation;
         population = new_population;
-#endif
     }
 
     void simulate_generation() {
